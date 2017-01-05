@@ -232,7 +232,7 @@
                     </StackPanel>
 
                 </Grid>
-
+    <!--Another Comment-->
                 <Grid Name="StartTest_Grid" Background="{Binding ElementName=Grid1, Path=Background}">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="{StaticResource SquareDim}"/>
