@@ -1,0 +1,210 @@
+﻿<UserControl x:Class="AceGrading.TestManagement"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:AceGrading"
+             xmlns:converters="clr-namespace:System.Windows.Controls;assembly=PresentationFramework" 
+             mc:Ignorable="d" 
+             d:DesignHeight="{StaticResource DesignHeight}" d:DesignWidth="1500" 
+             FontFamily="{StaticResource Font}" 
+             FontSize="{StaticResource FontSize}">
+    <UserControl.Resources>
+        <ControlTemplate x:Key="validationErrorTemplate">
+            <DockPanel>
+                <Border BorderBrush="Red" BorderThickness="1" CornerRadius="5" Visibility="Hidden">
+                    <AdornedElementPlaceholder x:Name="controlWithError"/>
+                </Border>
+                <TextBlock Foreground="Red" FontSize="20" Margin="10,0,0,0" ToolTip="{Binding ElementName=controlWithError, Path=AdornedElement.(Validation.Errors)[0].ErrorContent}">!</TextBlock>
+            </DockPanel>
+        </ControlTemplate>
+
+    </UserControl.Resources>
+    
+    <Grid DataContext="{Binding SelectedClass}">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="{DynamicResource RectDim}"/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <Grid Name="Grid1" Grid.Column="0" Background="{DynamicResource OffWhite}">
+            <Grid Name="Tests_Grid" Visibility="{Binding HasTests, Converter={StaticResource BoolToVis}}" Margin="10,0,10,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="{DynamicResource SquareDim}"/>
+                    <RowDefinition Height="{DynamicResource SquareDim}"/>
+                    <RowDefinition Height="{DynamicResource SquareDim}"/>
+                    <RowDefinition Height="{DynamicResource SquareDim}"/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <TextBlock Text="Tests" VerticalAlignment="Center"/>
+                <Button HorizontalAlignment="Right" Style="{DynamicResource BlueTextBtn}" Content="View Test" VerticalAlignment="Center" Click="ViewTest_Click"/>
+                <Ellipse Width="{DynamicResource LargeProfilePic}" Fill="{DynamicResource DarkSteelBlue}" Height="{DynamicResource LargeProfilePic}" Grid.Row="1" Grid.RowSpan="2"/>
+
+                <TextBlock Text="{Binding SelectedTest.Initials}" Grid.Row="1" Grid.RowSpan="2" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="60" Foreground="White"/>
+                <StackPanel Grid.Row="3" Grid.RowSpan="2">
+                    <TextBlock Text="{Binding SelectedTest.TestName}" HorizontalAlignment="Center" FontSize="20" Foreground="Black"/>
+                    <TextBlock Text="{Binding SelectedTest.Answers.Count, StringFormat={}Questions: {0}}" HorizontalAlignment="Center"/>
+                    <TextBlock Text="{Binding SelectedTest.DateModified, StringFormat={}Modified: {0}}" HorizontalAlignment="Center"/>
+                </StackPanel>
+
+                <Grid Grid.Row="4" Margin="0,10,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="25"/>
+                        <RowDefinition/>
+                        <RowDefinition Height="25"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="Switch Test" VerticalAlignment="Center"/>
+                    <ListBox Name="testListbx" Grid.Row="1" Background="Transparent" BorderBrush="{x:Null}" 
+                             ScrollViewer.VerticalScrollBarVisibility="Auto" HorizontalContentAlignment="Stretch" 
+                             ItemsSource="{Binding Tests}" SelectedItem="{Binding SelectedTest}">                   
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Name="ListItem_Grid" Height="{DynamicResource SmallProfilePic}" Background="Transparent">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="40"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Ellipse Height="{DynamicResource SmallProfilePic}" Width="{DynamicResource SmallProfilePic}" Fill="{DynamicResource DarkSteelBlue}"/>
+                                    <TextBlock Text="{Binding Initials}" VerticalAlignment="Center" Foreground="White" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="{Binding TestName}" Grid.Column="1" Margin="10,0,50,0" TextWrapping="Wrap" Foreground="{DynamicResource DarkGray}" VerticalAlignment="Center" Width="160" />
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <Button Content="Create Test" Grid.Row="2" HorizontalAlignment="Right" Style="{DynamicResource BlueTextBtn}" Command="{Binding PreAddTest}" VerticalAlignment="Center" Click="ViewTest_Click"/>
+                </Grid>
+            </Grid>
+
+            <Grid Name="NoTests_Grid" Margin="10,0,10,0" Visibility="{Binding HasTests, Converter={StaticResource InvserseBoolToVis}}" Background="{Binding ElementName=Grid1, Path=Background}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="{DynamicResource SquareDim}"/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <TextBlock Text="Tests" VerticalAlignment="Center"/>
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="1">
+                    <TextBlock FontStyle="Italic" TextAlignment="Center" TextWrapping="Wrap" FontSize="18" VerticalAlignment="Center" Foreground="Black">
+                    There seems to be no <LineBreak/> tests for this class, <LineBreak/> click below to create your first test.
+                    </TextBlock>
+                    <Button Content="Create Test" Style="{StaticResource BlueTextBtn}" HorizontalAlignment="Center" Margin="0,10,0,0"
+                            Command="{Binding PreAddTest}" Click="ViewTest_Click"/>
+                </StackPanel>
+            </Grid>
+
+            <Grid Name="ViewTest_Grid" Visibility="Hidden" Margin="10,0,10,0" Background="{Binding ElementName=Grid1, Path=Background}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="{DynamicResource SquareDim}"/>
+                    <RowDefinition/>
+                    <RowDefinition Height="{DynamicResource SmallGridDim}"/>
+                </Grid.RowDefinitions>
+                <TextBlock Text="View Test" VerticalAlignment="Center"/>
+                <Button Content="Finish" HorizontalAlignment="Right" Style="{DynamicResource BlueTextBtn}" VerticalAlignment="Center" Command="{Binding AddTest}" Click="FinishViewTest_Click"/>
+                <Button Content="Delete Test" Style="{StaticResource RedTextBtn}" VerticalAlignment="Center" HorizontalAlignment="Center" Grid.Row="2" Command="{Binding DeleteTest}" Click="FinishViewTest_Click"/>
+
+                <Grid Grid.Row="1" DataContext="{Binding SelectedTest}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="{DynamicResource LargeSquareDim}"/>
+                        <RowDefinition Height="{DynamicResource LargeSquareDim}"/>
+                        <RowDefinition Height="{DynamicResource LargeSquareDim}"/>
+                        <RowDefinition Height="{DynamicResource LargeSquareDim}"/>
+                        <RowDefinition Height="{DynamicResource SquareDim}"/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Margin="2,2,0,0" VerticalAlignment="Center" Grid.Row="0">
+                        <TextBlock Text="Name" VerticalAlignment="Center" Foreground="Black"/>
+                        <DockPanel Grid.Row="1" Margin="0,5,0,0">
+                            <Grid HorizontalAlignment="Left">
+                                <Ellipse Width="{DynamicResource SmallProfilePic}" Fill="{DynamicResource DarkSteelBlue}" Height="{DynamicResource SmallProfilePic}"/>
+                                <TextBlock Text="{Binding Initials, FallbackValue='AA'}" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="White"/>
+                            </Grid>
+                            <StackPanel Margin="2,2,0,0" VerticalAlignment="Center">
+                                <TextBox Text="{Binding TestName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, FallbackValue='Test Name'}"/>
+                                <Rectangle Height="2" Margin="2" Fill="{DynamicResource MediumGray}"/>
+                            </StackPanel>
+                        </DockPanel>
+                    </StackPanel>
+
+                    <StackPanel Margin="2,2,0,0" VerticalAlignment="Center" Grid.Row="1">
+                        <TextBlock Text="Document" VerticalAlignment="Center" Grid.Row="2" Foreground="Black"/>
+                        <TextBox Margin="{DynamicResource SmallIndent}" Text="{Binding Upload_File_Name, Mode=TwoWay, FallbackValue='Upload File Path'}"/>
+                        <Rectangle Height="2" Margin="{DynamicResource SmallLineIndent}" Fill="{DynamicResource MediumGray}"/>
+                        <DockPanel HorizontalAlignment="Right">
+                            <Button Style="{DynamicResource BlueTextBtn}" Content="Open" HorizontalAlignment="Right" Margin="0,0,30,0" Command="{Binding OpenFile}"/>
+                            <Button Style="{DynamicResource BlueTextBtn}" Content="Browse" HorizontalAlignment="Right" Command="{Binding Browse}"/>
+                        </DockPanel>
+                    </StackPanel>
+
+                    <StackPanel Margin="2,2,0,0" VerticalAlignment="Center" Grid.Row="2">
+                        <TextBlock Text="Total Points" VerticalAlignment="Center" Grid.Row="2" Foreground="Black"/>
+                        <TextBox Margin="{DynamicResource SmallIndent}" Width="100" HorizontalAlignment="Left" Validation.ErrorTemplate="{StaticResource validationErrorTemplate}">
+                            <TextBox.Text>
+                                <Binding Path="Point_Worth" Mode="TwoWay" FallbackValue="0" UpdateSourceTrigger="PropertyChanged">
+                                    <Binding.ValidationRules>
+                                        <local:NameValidator/>
+                                    </Binding.ValidationRules>
+                                </Binding>
+                            </TextBox.Text>
+                        </TextBox>
+                        <Rectangle Height="2" Margin="{DynamicResource SmallLineIndent}" Fill="{DynamicResource MediumGray}"/>
+                        <TextBlock Margin="{DynamicResource SmallIndent}" Visibility="{Binding Individual_Values, Converter={StaticResource BoolToVis}}" 
+                               HorizontalAlignment="Left" Text="{Binding PointsRemaining, StringFormat={}{0} Point(s) Remaining, UpdateSourceTrigger=PropertyChanged}"/>
+                    </StackPanel>
+
+                    <StackPanel Margin="2,2,0,0" VerticalAlignment="Top" Grid.Row="3">
+                        <TextBlock Text="Individual Points" VerticalAlignment="Center" Grid.Row="2" Foreground="Black"/>
+                        <DockPanel>
+                            <ToggleButton IsChecked="{Binding Individual_Values, Mode=TwoWay}" Style="{StaticResource YesNoToggleBtn}" Height="40" Width="40" HorizontalAlignment="Left"/>
+                            <Grid>
+                                <TextBlock Margin="6,2,0,0" VerticalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" Visibility="{Binding Individual_Values, FallbackValue=Hidden, Converter={StaticResource BoolToVis}}">
+                                       Point values will be modifiable.
+                                </TextBlock>
+                                <TextBlock Margin="6,2,0,0" VerticalAlignment="Center" TextWrapping="Wrap" Visibility="{Binding Individual_Values, Converter={StaticResource InvserseBoolToVis}}">
+                                       All point values will be worth the same and unmodifiable.
+                                </TextBlock>
+                            </Grid>
+                        </DockPanel>
+                    </StackPanel>
+
+                    <StackPanel Margin="2,2,0,0" VerticalAlignment="Top" Grid.Row="5">
+                        <TextBlock Text="Statistics" VerticalAlignment="Center" Grid.Row="2"/>
+                        <TextBlock Text="No statistics available" VerticalAlignment="Center" Grid.Row="2" FontStyle="Italic" Margin="{StaticResource SmallIndent}" Visibility="{Binding Is_Graded, Converter={StaticResource InvserseBoolToVis}}"/>
+                        <Grid Visibility="{Binding Is_Graded, Converter={StaticResource BoolToVis}}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <Viewbox>
+                                    <ProgressBar Style="{StaticResource CircularProgressBar}" Width="1555" Height="1611" Margin="200" 
+                                         Value="{Binding LowestScore}" Background="{StaticResource BrightBlue}" Foreground="{StaticResource DarkGray}" 
+                                         local:ProgressBarSmoother.SmoothValue="{Binding LowestScore}"/>
+                                </Viewbox>
+                                <TextBlock Text="Lowest" VerticalAlignment="Center" Grid.Column="0" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1">
+                                <Viewbox>
+                                    <ProgressBar Style="{StaticResource CircularProgressBar}" Width="1555" Height="1611" Margin="200" 
+                                         Value="{Binding AverageScore}" Background="{StaticResource BrightBlue}" Foreground="{StaticResource DarkGray}" 
+                                         local:ProgressBarSmoother.SmoothValue="{Binding AverageScore}"/>
+                                </Viewbox>
+                                <TextBlock Text="Average" VerticalAlignment="Center" Grid.Column="1" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="2">
+                                <Viewbox>
+                                    <ProgressBar Style="{StaticResource CircularProgressBar}" Width="1555" Height="1611" Margin="200" 
+                                         Value="{Binding HighestScore}" Background="{StaticResource BrightBlue}" Foreground="{StaticResource DarkGray}" 
+                                         local:ProgressBarSmoother.SmoothValue="{Binding HighestScore}"/>
+                                </Viewbox>
+                                <TextBlock Text="Highest" VerticalAlignment="Center" Grid.Column="2" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Grid>
+            </Grid>
+        </Grid>
+
+        <local:TestAnswers Grid.Column="1" Visibility="{Binding ElementName=ViewTest_Grid, Path=Visibility}"/>
+    </Grid>
+
+</UserControl>

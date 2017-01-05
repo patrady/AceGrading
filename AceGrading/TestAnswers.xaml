@@ -1,0 +1,679 @@
+﻿<UserControl x:Class="AceGrading.TestAnswers"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:AceGrading"
+             xmlns:converters="clr-namespace:System.Windows.Controls;assembly=PresentationFramework"
+             xmlns:system="clr-namespace:System;assembly=mscorlib"
+             mc:Ignorable="d" 
+             d:DesignHeight="900" d:DesignWidth="1300">
+    <!--Parent DataContext is ViewModel-->
+    <UserControl.Resources>
+        <ControlTemplate x:Key="validationErrorTemplate">
+            <DockPanel>
+                <Border BorderBrush="Red" BorderThickness="1" CornerRadius="5" Visibility="Hidden">
+                    <AdornedElementPlaceholder x:Name="controlWithError"/>
+                </Border>
+                <TextBlock Foreground="Red" FontSize="20" Margin="10,0,0,0" ToolTip="Invalid Value">!</TextBlock>
+            </DockPanel>
+        </ControlTemplate>
+    </UserControl.Resources>
+    <DockPanel ScrollViewer.CanContentScroll="True" ScrollViewer.VerticalScrollBarVisibility="Visible" Margin="5,0,0,0" DataContext="{Binding SelectedTest}">
+        <Border CornerRadius="0,5,5,0" Background="{StaticResource OffWhite}" Width="190" ScrollViewer.CanContentScroll="True" ScrollViewer.VerticalScrollBarVisibility="Auto">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="200"/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Border Background="{StaticResource LightGray}" CornerRadius="5" Margin="2">
+                    <StackPanel>
+                        <TextBlock Text="Add Question:" HorizontalAlignment="Center" Foreground="Black"/>
+                        <ListView BorderBrush="{x:Null}" VerticalAlignment="Top" Background="{x:Null}" HorizontalContentAlignment="Center">
+                            <Button Content="Multiple Choice" Style="{StaticResource RectangleButton}" Width="120" Margin="2" Command="{Binding AddMultipleChoice}"/>
+                            <Button Content="Matching" Style="{StaticResource RectangleButton}" Width="120" Margin="2" Command="{Binding AddMatching}"/>
+                            <Button Content="True / False" Style="{StaticResource RectangleButton}" Width="120" Margin="2" Command="{Binding AddTrueFalse}"/>
+                            <Button Content="Short Answer" Style="{StaticResource RectangleButton}" Width="120" Margin="2" Command="{Binding AddShortAnswer}"/>
+                            <Button Content="Essay" Style="{StaticResource RectangleButton}" Width="120" Margin="2" Command="{Binding AddEssay}"/>
+                        </ListView>
+                    </StackPanel>
+                </Border>
+
+                <Border Background="{StaticResource LightGray}" CornerRadius="5" Margin="2" Grid.Row="1">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="40"/>
+                            <RowDefinition/>
+                        </Grid.RowDefinitions>
+                        <Grid Grid.Row="0">
+                            <TextBlock Text="Sections" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="Black"/>
+                            <RepeatButton Content="+" Style="{StaticResource BlueTextRepeatBtn}" HorizontalAlignment="Right" Margin="0,0,0,2" Width="30" Height="30" FontSize="20" Delay="200" Interval="100"  Command="{Binding AddSection}"/>
+                        </Grid>
+                        <ListView x:Name="SectionsListbx" BorderBrush="{x:Null}" Grid.Row="1" Background="{x:Null}" ItemsSource="{Binding Sections}"
+                                  SelectedItem="{Binding SelectedSection}"
+                                  HorizontalContentAlignment="Center" 
+                                  ScrollViewer.CanContentScroll="True" 
+                                  ScrollViewer.VerticalScrollBarVisibility="Auto" 
+                                  ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                            <ListView.Resources>
+                                <DataTemplate DataType="{x:Type local:Section}">
+                                    <Border CornerRadius="5" Background="{StaticResource OffWhite}" Width="150">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition/>
+                                                <ColumnDefinition/>
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="20"/>
+                                                <RowDefinition/>
+                                                <RowDefinition/>
+                                                <RowDefinition/>
+                                            </Grid.RowDefinitions>
+                                            <TextBlock Text="{Binding Name}" Grid.Row="0" Grid.ColumnSpan="2" HorizontalAlignment="Center"/>
+                                            <DockPanel HorizontalAlignment="Center" Grid.Row="1">
+                                                <RepeatButton Content="-" Style="{StaticResource BlueTextRepeatBtn}" Width="30" Height="30" FontSize="20" Delay="500" Interval="100" Command="{Binding DecrementRequired}"/>
+                                                <TextBlock Text="{Binding Required_Questions}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="18"/>
+                                                <RepeatButton Content="+" Style="{StaticResource BlueTextRepeatBtn}" Width="30" Height="30" FontSize="20" Delay="200" Interval="100"  Command="{Binding IncrementRequired}"/>
+                                            </DockPanel>
+                                            <TextBlock Text="Required" Grid.Row="2" HorizontalAlignment="Center" FontSize="11"/>
+                                            <TextBlock Text="Total" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Center" FontSize="11"/>
+                                            <TextBlock Text="{Binding Path=Questions.Count}" Grid.Row="1" Grid.Column="1" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+                                            <Button Content="Delete" Style="{StaticResource RedTextBtn}" Grid.Row="3" Grid.Column="1" Command="{Binding RelativeSource={RelativeSource AncestorType=ListView}, Path=DataContext.DeleteSection}"
+                                                    HorizontalAlignment="Right" Margin="0,2,4,2" FontSize="11"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ListView.Resources>
+                            <ListView.ItemContainerStyle>
+                                <Style TargetType="ListViewItem">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="ListViewItem">
+                                                <Border BorderThickness="{TemplateBinding Border.BorderThickness}"
+                                                        Padding="{TemplateBinding Control.Padding}"
+                                                        BorderBrush="{TemplateBinding Border.BorderBrush}"
+                                                        Background="{TemplateBinding Background}"
+                                                        Name="Bd"
+                                                        SnapsToDevicePixels="True">
+                                                    <ContentPresenter Content="{TemplateBinding ContentControl.Content}"
+                                                                      ContentTemplate="{TemplateBinding ContentControl.ContentTemplate}"
+                                                                      ContentStringFormat="{TemplateBinding ContentControl.ContentStringFormat}"
+                                                                      HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}"
+                                                                      VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}"
+                                                                      SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" />
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="IsSelected" Value="True"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ListView.ItemContainerStyle>
+                        </ListView>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Border>
+
+        <ListView Margin="10,0,0,0" Grid.Row="1" Background="Transparent" BorderBrush="{x:Null}" SelectedItem="{Binding SelectedQuestion, Mode=TwoWay}" ItemsSource="{Binding Answers}">
+            <ListView.Resources>
+                <DataTemplate DataType="{x:Type local:MultipleChoice}">
+                    <DockPanel>
+                        <Border x:Name="MultChoiceTemplate" VerticalAlignment="Center" CornerRadius="5" Background="{StaticResource OffWhite}" Margin="5" Width="380" MaxWidth="380">
+                            <StackPanel>
+                                <!--Header-->
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="120"/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border Background="LightSteelBlue" CornerRadius="5,5,0,0" Grid.ColumnSpan="2"/>
+                                    <TextBlock Text="{Binding Number}" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10,0,0,0"/>
+                                    <TextBlock Text="Multiple Choice Question" FontSize="18" VerticalAlignment="Center" HorizontalAlignment="Center" Grid.ColumnSpan="3"/>
+                                </Grid>
+
+                                <!--Correct Answer-->
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="120"/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Correct Answer:" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0,0,35"/>
+                                    <StackPanel Grid.Column="1">
+                                        <ListView ItemsSource="{Binding OptionalAnswers}" Height="70" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Disabled" BorderBrush="{x:Null}" Background="{x:Null}">
+                                            <ListView.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <WrapPanel IsItemsHost="True"/>
+                                                </ItemsPanelTemplate>
+                                            </ListView.ItemsPanel>
+                                            <ListView.ItemTemplate>
+                                                <DataTemplate>
+                                                    <RadioButton Content="{Binding Letter}" IsChecked="{Binding isAnswer, Mode=TwoWay}" Style="{StaticResource AnswerToggleBtn}"/>
+                                                </DataTemplate>
+                                            </ListView.ItemTemplate>
+                                        </ListView>
+                                    </StackPanel>
+                                </Grid>
+
+                                <!--Advanced Options-->
+                                <ToggleButton Name="AdvancedOptions_TgleBtn" Content="Options" Style="{StaticResource BlueTextToggleBtn}"
+                                          HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="30,0,0,0">
+                                    <ToggleButton.Triggers>
+                                        <EventTrigger RoutedEvent="ToggleButton.Checked">
+                                            <BeginStoryboard>
+                                                <Storyboard x:Name="ExpandMultChoice">
+                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(FrameworkElement.MinHeight)" Storyboard.TargetName="AdvancedOptions_Grid">
+                                                        <EasingDoubleKeyFrame KeyTime="0:0:0" Value="0"/>
+                                                        <EasingDoubleKeyFrame KeyTime="0:0:0.4" Value="390"/>
+                                                    </DoubleAnimationUsingKeyFrames>
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </EventTrigger>
+                                        <EventTrigger RoutedEvent="ToggleButton.Unchecked">
+                                            <BeginStoryboard>
+                                                <Storyboard x:Name="CollapseMultChoice">
+                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(FrameworkElement.MinHeight)" Storyboard.TargetName="AdvancedOptions_Grid">
+                                                        <EasingDoubleKeyFrame KeyTime="0:0:0.4" Value="0"/>
+                                                    </DoubleAnimationUsingKeyFrames>
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </EventTrigger>
+                                    </ToggleButton.Triggers>
+                                </ToggleButton>
+                                <Grid Name="AdvancedOptions_Grid" Height="0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="120"/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="50"/>
+                                        <RowDefinition/>
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock Text="Number of Options:" TextWrapping="Wrap" TextAlignment="Center" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    <DockPanel Grid.Column="1" HorizontalAlignment="Left" Margin="2,0,0,0">
+                                        <RepeatButton Content="-" Style="{StaticResource BlueTextRepeatBtn}" Width="40" Height="40" FontSize="25" Margin="2" Delay="500" Interval="100" Command="{Binding DecrementOptions}"/>
+                                        <Border Width="40" Height="40" CornerRadius="5" Margin="2,4,2,2">
+                                            <TextBlock Text="{Binding NumberOptions}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <RepeatButton Content="+" Style="{StaticResource BlueTextRepeatBtn}" Width="40" Height="40" FontSize="25" Margin="2" Delay="200" Interval="100"  Command="{Binding IncrementOptions}"/>
+                                    </DockPanel>
+
+                                    <!--Starting Options-->
+                                    <TextBlock Text="Strarting Options:" HorizontalAlignment="Center" VerticalAlignment="Top" Grid.Row="1"/>
+                                    <ListView Grid.Column="1" Grid.Row="1" ItemsSource="{Binding AnswersToPickFrom}" BorderBrush="{x:Null}" Background="{x:Null}" ScrollViewer.VerticalScrollBarVisibility="Hidden">
+                                        <ListView.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel Width="{Binding (FrameworkElement.ActualWidth), RelativeSource={RelativeSource AncestorType=ScrollContentPresenter}}"/>
+                                            </ItemsPanelTemplate>
+                                        </ListView.ItemsPanel>
+                                        <ListView.ItemTemplate>
+                                            <DataTemplate>
+                                                <ToggleButton Content="{Binding Letter}" IsChecked="{Binding isStartingOption, Mode=TwoWay}" Style="{StaticResource LetterToggleBtn}"/>
+                                            </DataTemplate>
+                                        </ListView.ItemTemplate>
+                                    </ListView>
+                                </Grid>
+
+                                <!--Point Value-->
+                                <Grid Name="PointValue_Grid" Visibility="{Binding RelativeSource={RelativeSource AncestorType=ListView}, Path=DataContext.Individual_Values, Mode=TwoWay, Converter={StaticResource BoolToVis}}"
+                                      Margin="0,5,0,5">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="120"/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Text="Point Value:" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    <DockPanel Grid.Column="1">
+                                        <StackPanel>
+                                            <TextBox Width="100" HorizontalAlignment="Left"  Validation.ErrorTemplate="{StaticResource validationErrorTemplate}">
+                                                <TextBox.Text>
+                                                    <Binding Path="Point_Value" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged">
+                                                        <Binding.ValidationRules>
+                                                            <local:NameValidator></local:NameValidator>
+                                                        </Binding.ValidationRules>
+                                                    </Binding>
+                                                </TextBox.Text>
+                                            </TextBox>
+                                            <Rectangle Height="2" Margin="2,0,0,0" Fill="{DynamicResource MediumGray}" Width="100" HorizontalAlignment="Left"/>
+                                        </StackPanel>
+                                    </DockPanel>
+                                </Grid>
+
+                                <!--Section-->
+                                <Grid Margin="0,5,0,5" Visibility="{Binding RelativeSource={RelativeSource AncestorType=ListView}, Path=DataContext.HasSections, Mode=TwoWay, Converter={StaticResource BoolToVis}}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="120"/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Section:" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    <ComboBox Grid.Column="1" Height="25" Width="200" HorizontalAlignment="Left" VerticalAlignment="Center" 
+                                          SelectedItem="{Binding TestSection, Mode=TwoWay}" ItemsSource="{Binding RelativeSource={RelativeSource AncestorType=ListView}, Path=DataContext.Sections}"
+                                          DisplayMemberPath="Name">
+                                    </ComboBox>
+                                </Grid>
+
+                                <!--Delete-->
+                                <Button Content="Delete Question" Grid.Column="1" Margin="0,0,0,5" HorizontalAlignment="Center" Style="{StaticResource RedTextBtn}" Command="{Binding DeleteQuestion}"/>
+                            </StackPanel>
+                        </Border>
+                        <local:NewPlaceHolder/>
+                    </DockPanel>
+                    <DataTemplate.Triggers>
+                        <EventTrigger RoutedEvent="Binding.TargetUpdated">
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation Duration="0:0:5" To="0.0" Storyboard.TargetProperty="Opacity" Storyboard.TargetName="PointValue_Grid"/>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                    </DataTemplate.Triggers>
+                </DataTemplate>
+
+                <DataTemplate DataType="{x:Type local:Matching}">
+                    <DockPanel>
+                        <Border CornerRadius="5"  Background="{StaticResource OffWhite}" Margin="5" Width="380" VerticalAlignment="Center">
+                            <StackPanel>
+                                <!--Header-->
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="120"/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border Background="{DynamicResource LightRed}" CornerRadius="5,5,0,0" Grid.ColumnSpan="2"/>
+                                    <TextBlock Text="{Binding Number}" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10,0,0,0"/>
+                                    <TextBlock Text="Matching Question" FontSize="18" VerticalAlignment="Center" HorizontalAlignment="Center" Grid.ColumnSpan="3"/>
+                                </Grid>
+
+                                <!--Correct Answer-->
+                                <Grid Grid.Row="2">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="120"/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Correct Answer(s):" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0,0,35"/>
+                                    <StackPanel Grid.Column="1">
+
+                                        <ListView ItemsSource="{Binding OptionalAnswers}" Height="70" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Disabled" BorderBrush="{x:Null}" Background="{x:Null}">
+                                            <ListView.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <WrapPanel IsItemsHost="True"/>
+                                                </ItemsPanelTemplate>
+                                            </ListView.ItemsPanel>
+                                            <ListView.ItemTemplate>
+                                                <DataTemplate>
+                                                    <ToggleButton Content="{Binding Letter}" IsChecked="{Binding isAnswer, Mode=TwoWay}" Style="{StaticResource AnswerToggleBtn}"/>
+                                                </DataTemplate>
+                                            </ListView.ItemTemplate>
+                                        </ListView>
+                                    </StackPanel>
+                                </Grid>
+
+                                <!--Advanced Options-->
+                                <ToggleButton Name="multchoiceOptions_ToggleBtn" Content="Options" Style="{StaticResource BlueTextToggleBtn}"
+                                          HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="30,0,0,0">
+                                    <ToggleButton.Triggers>
+                                        <EventTrigger RoutedEvent="ToggleButton.Checked">
+                                            <BeginStoryboard>
+                                                <Storyboard x:Name="ExpandMultChoice">
+                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(FrameworkElement.MinHeight)" Storyboard.TargetName="AdvancedOptions_Grid">
+                                                        <EasingDoubleKeyFrame KeyTime="0:0:0.4" Value="360"/>
+                                                    </DoubleAnimationUsingKeyFrames>
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </EventTrigger>
+                                        <EventTrigger RoutedEvent="ToggleButton.Unchecked">
+                                            <BeginStoryboard>
+                                                <Storyboard x:Name="CollapseMultChoice">
+                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(FrameworkElement.MinHeight)" Storyboard.TargetName="AdvancedOptions_Grid">
+                                                        <EasingDoubleKeyFrame KeyTime="0:0:0.4" Value="0"/>
+                                                    </DoubleAnimationUsingKeyFrames>
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </EventTrigger>
+                                    </ToggleButton.Triggers>
+                                </ToggleButton>
+                                <Grid Name="AdvancedOptions_Grid" Height="0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="120"/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock TextWrapping="Wrap" VerticalAlignment="Top" TextAlignment="Right" HorizontalAlignment="Center" Margin="0,5,0,15">Answers to <LineBreak/> Choose From:</TextBlock>
+                                    <ListView Grid.Column="1" ItemsSource="{Binding AnswersToPickFrom}" BorderBrush="{x:Null}" Background="{x:Null}" ScrollViewer.VerticalScrollBarVisibility="Hidden">
+                                        <ListView.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel Width="{Binding (FrameworkElement.ActualWidth), RelativeSource={RelativeSource AncestorType=ScrollContentPresenter}}"
+                                                       ItemWidth="{Binding (ListView.View).ItemWidth,  RelativeSource={RelativeSource AncestorType=ListView}}"
+                                                       MinWidth="{Binding ItemWidth, RelativeSource={RelativeSource Self}}" ItemHeight="{Binding (ListView.View).ItemHeight, 
+                                                       RelativeSource={RelativeSource AncestorType=ListView}}" />
+                                            </ItemsPanelTemplate>
+                                        </ListView.ItemsPanel>
+                                        <ListView.ItemTemplate>
+                                            <DataTemplate>
+                                                <ToggleButton Content="{Binding Letter}" IsChecked="{Binding isOptionalAnswer, Mode=TwoWay}" Style="{StaticResource LetterToggleBtn}"/>
+                                            </DataTemplate>
+                                        </ListView.ItemTemplate>
+                                    </ListView>
+                                </Grid>
+
+                                <!--Point Value-->
+                                <Grid Name="PointValue_Grid" Visibility="{Binding RelativeSource={RelativeSource AncestorType=ListView}, Path=DataContext.Individual_Values, Mode=TwoWay, Converter={StaticResource BoolToVis}}" Margin="5,0,0,5">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="120"/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Text="Point Value:" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    <DockPanel Grid.Column="1">
+                                        <StackPanel>
+                                            <TextBox Width="100" HorizontalAlignment="Left"  Validation.ErrorTemplate="{StaticResource validationErrorTemplate}">
+                                                <TextBox.Text>
+                                                    <Binding Path="Point_Value" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged">
+                                                        <Binding.ValidationRules>
+                                                            <local:NameValidator></local:NameValidator>
+                                                        </Binding.ValidationRules>
+                                                    </Binding>
+                                                </TextBox.Text>
+                                            </TextBox>
+                                            <Rectangle Height="2" Margin="2,0,0,0" Fill="{DynamicResource MediumGray}" Width="100" HorizontalAlignment="Left"/>
+                                        </StackPanel>
+                                    </DockPanel>
+                                </Grid>
+
+                                <!--Delete-->
+                                <Button Content="Delete Question" Grid.Column="1" Margin="0,0,0,5" HorizontalAlignment="Center" Style="{StaticResource RedTextBtn}" Command="{Binding DeleteQuestion}"/>
+                            </StackPanel>
+                        </Border>
+                        <local:NewPlaceHolder/>
+                    </DockPanel>
+                </DataTemplate>
+
+                <DataTemplate DataType="{x:Type local:TrueFalse}">
+                    <DockPanel>
+                        <Border CornerRadius="5" Background="{DynamicResource OffWhite}" Margin="5" Width="380" VerticalAlignment="Center">
+                            <StackPanel>
+                                <!--Header-->
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="120"/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border Background="{DynamicResource MediumGray}" CornerRadius="5,5,0,0" Grid.ColumnSpan="2"/>
+                                    <TextBlock Text="{Binding Number}" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10,0,0,0"/>
+                                    <TextBlock Text="True / False Question" FontSize="18" VerticalAlignment="Center" HorizontalAlignment="Center" Grid.ColumnSpan="3"/>
+                                </Grid>
+
+                                <!--True and False Buttons-->
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="120"/>
+                                        <ColumnDefinition/>
+                                        <ColumnDefinition/>
+                                        <ColumnDefinition Width="12"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Answer:" Grid.Row="1" Foreground="{DynamicResource FontColor}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    <RadioButton Content="True" IsChecked="{Binding Answer, Mode=TwoWay}" Style="{StaticResource RoundedAnswerToggleBtn}" Margin="2" Grid.Column="1" Height="30"/>
+
+                                    <RadioButton Content="False" IsChecked="{Binding Answer, Converter={StaticResource InvserseBoolToVis}, Mode=TwoWay}" Style="{StaticResource RoundedAnswerToggleBtn}" Grid.Column="2" Margin="2" Height="30">
+                                        <ToggleButton.Triggers>
+                                            <EventTrigger RoutedEvent="ToggleButton.Checked">
+                                                <BeginStoryboard>
+                                                    <Storyboard x:Name="ExpandAnwerIfFalse">
+                                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(FrameworkElement.MinHeight)" Storyboard.TargetName="AnswerIfFalse_Grid">
+                                                            <EasingDoubleKeyFrame KeyTime="0:0:0.4" Value="30"/>
+                                                        </DoubleAnimationUsingKeyFrames>
+                                                    </Storyboard>
+                                                </BeginStoryboard>
+                                            </EventTrigger>
+                                            <EventTrigger RoutedEvent="ToggleButton.Unchecked">
+                                                <BeginStoryboard>
+                                                    <Storyboard x:Name="CollapseAnswerIfFalse">
+                                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(FrameworkElement.MinHeight)" Storyboard.TargetName="AnswerIfFalse_Grid">
+                                                            <EasingDoubleKeyFrame KeyTime="0:0:0.4" Value="0"/>
+                                                        </DoubleAnimationUsingKeyFrames>
+                                                    </Storyboard>
+                                                </BeginStoryboard>
+                                            </EventTrigger>
+                                        </ToggleButton.Triggers>
+                                    </RadioButton>
+                                </Grid>
+
+                                <!--Answer if False Grid-->
+                                <Grid Name="AnswerIfFalse_Grid" Height="0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="120"/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Correct Answer:" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" TextWrapping="Wrap"/>
+
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBox  Text="{Binding Answer_If_False, FallbackValue='Optional', Mode=TwoWay}" Margin="2,5,5,5" SpellCheck.IsEnabled="True"/>
+                                        <Rectangle Height="2" Margin="2,0,0,0" Fill="{DynamicResource MediumGray}" Width="250" HorizontalAlignment="Left"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <!--Point Value-->
+                                <Grid Name="PointValue_Grid" Visibility="{Binding RelativeSource={RelativeSource AncestorType=ListView}, Path=DataContext.Individual_Values, Mode=TwoWay, Converter={StaticResource BoolToVis}}" Margin="0,5,0,5">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="120"/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Text="Point Value:" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    <DockPanel Grid.Column="1">
+                                        <StackPanel>
+                                            <TextBox Width="100" HorizontalAlignment="Left"  Validation.ErrorTemplate="{StaticResource validationErrorTemplate}">
+                                                <TextBox.Text>
+                                                    <Binding Path="Point_Value" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged">
+                                                        <Binding.ValidationRules>
+                                                            <local:NameValidator></local:NameValidator>
+                                                        </Binding.ValidationRules>
+                                                    </Binding>
+                                                </TextBox.Text>
+                                            </TextBox>
+                                            <Rectangle Height="2" Margin="2,0,0,0" Fill="{DynamicResource MediumGray}" Width="100" HorizontalAlignment="Left"/>
+                                        </StackPanel>
+                                    </DockPanel>
+                                </Grid>
+
+                                <!--Delete-->
+                                <Button Content="Delete Question" Grid.Column="1" Margin="0,5,0,5" HorizontalAlignment="Center" Style="{StaticResource RedTextBtn}" Command="{Binding DeleteQuestion}"/>
+                            </StackPanel>
+                        </Border>
+                        <local:NewPlaceHolder/>
+                    </DockPanel>
+                </DataTemplate>
+
+                <DataTemplate DataType="{x:Type local:ShortAnswer}">
+                    <DockPanel>
+                        <Border CornerRadius="5" Background="{DynamicResource OffWhite}" Margin="5" Width="380" VerticalAlignment="Center">
+                            <StackPanel>
+                                <!--Header-->
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="120"/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border Background="{DynamicResource Aqua}" CornerRadius="5,5,0,0" Grid.ColumnSpan="2"/>
+                                    <TextBlock Text="{Binding Number}" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10,0,0,0"/>
+                                    <TextBlock Text="Short Answer Question" FontSize="18" VerticalAlignment="Center" HorizontalAlignment="Center" Grid.ColumnSpan="3"/>
+                                </Grid>
+
+                                <!--Answer-->
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="120"/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition/>
+                                        <RowDefinition/>
+                                    </Grid.RowDefinitions>
+                                    <TextBlock Text="Answer:" TextAlignment="Center" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBox  Text="{Binding Answer, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="2,5,5,5" SpellCheck.IsEnabled="True" TextWrapping="Wrap" MaxLength="{Binding MaxAnswerLength}"/>
+                                        <Rectangle Height="2" Margin="2,0,0,0" Fill="{DynamicResource MediumGray}" Width="250" HorizontalAlignment="Left"/>
+                                    </StackPanel>
+                                    <TextBlock Text="{Binding WordsRemaining, StringFormat={}Words Remaining: {0}, FallbackValue='Words Remaining: 20'}" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Right" TextAlignment="Center" VerticalAlignment="Center" Padding="0,0,20,0"/>
+
+                                </Grid>
+
+                                <!--Strict or Loose Grading-->
+                                <Grid Margin="0,2,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="120"/>
+                                        <ColumnDefinition/>
+                                        <ColumnDefinition/>
+                                        <ColumnDefinition Width="12"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Grading:" Grid.Row="4" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    <RadioButton Content="Strict" IsChecked="{Binding StrictInterpretation, Mode=TwoWay}" Style="{StaticResource RoundedAnswerToggleBtn}" Margin="2" Grid.Column="1" Height="30"
+                                             ToolTip="Grade Word for Word"/>
+                                    <RadioButton Content="Intuitive" IsChecked="{Binding StrictInterpretation, Converter={StaticResource InvserseBoolToVis}, Mode=TwoWay}" Style="{StaticResource RoundedAnswerToggleBtn}" Grid.Column="2" Margin="2" Height="30"
+                                             ToolTip="Grade by Concept Understanding"/>
+                                </Grid>
+
+                                <!--Point Value-->
+                                <Grid Name="PointValue_Grid" Visibility="{Binding RelativeSource={RelativeSource AncestorType=ListView}, Path=DataContext.Individual_Values, Mode=TwoWay, Converter={StaticResource BoolToVis}}" Margin="0,5,0,5">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="120"/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Text="Point Value:" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    <DockPanel Grid.Column="1">
+                                        <StackPanel>
+                                            <TextBox Width="100" HorizontalAlignment="Left"  Validation.ErrorTemplate="{StaticResource validationErrorTemplate}">
+                                                <TextBox.Text>
+                                                    <Binding Path="Point_Value" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged">
+                                                        <Binding.ValidationRules>
+                                                            <local:NameValidator></local:NameValidator>
+                                                        </Binding.ValidationRules>
+                                                    </Binding>
+                                                </TextBox.Text>
+                                            </TextBox>
+                                            <Rectangle Height="2" Margin="2,0,0,0" Fill="{DynamicResource MediumGray}" Width="100" HorizontalAlignment="Left"/>
+                                        </StackPanel>
+                                    </DockPanel>
+                                </Grid>
+
+                                <!--Delete-->
+                                <Button Content="Delete Question" Grid.Column="1" Margin="0,5,0,5" HorizontalAlignment="Center" Style="{StaticResource RedTextBtn}" Command="{Binding DeleteQuestion}"/>
+                            </StackPanel>
+                        </Border>
+                        <local:NewPlaceHolder/>
+                    </DockPanel>
+                </DataTemplate>
+
+                <DataTemplate DataType="{x:Type local:Essay}">
+                    <DockPanel>
+                        <Border CornerRadius="5"  Background="{DynamicResource OffWhite}" Margin="5" Width="380" VerticalAlignment="Center">
+                            <StackPanel>
+                                <!--Header-->
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="120"/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border Background="#FFE0CB95" CornerRadius="5,5,0,0" Grid.ColumnSpan="2"/>
+                                    <TextBlock Text="{Binding Number}" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10,0,0,0"/>
+                                    <TextBlock Text="Essay Question" FontSize="18" VerticalAlignment="Center" HorizontalAlignment="Center" Grid.ColumnSpan="3"/>
+                                </Grid>
+
+                                <!--Correct Answer-->
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="120"/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Explanation:" VerticalAlignment="Center" HorizontalAlignment="Center" TextWrapping="Wrap"/>
+                                    <TextBlock Grid.Column="1" VerticalAlignment="Center" TextWrapping="Wrap" Margin="0,0,10,0">
+                                      Essay questions will not be automatically graded. Instead, you will be prompted to grade them.
+                                    </TextBlock>
+                                </Grid>
+
+                                <!--Point Value-->
+                                <Grid Name="PointValue_Grid" Visibility="{Binding RelativeSource={RelativeSource AncestorType=ListView}, Path=DataContext.Individual_Values, Mode=TwoWay, Converter={StaticResource BoolToVis}}" Margin="0,5,0,5">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="120"/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Text="Point Value:" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    <DockPanel Grid.Column="1">
+                                        <StackPanel>
+                                            <TextBox Width="100" HorizontalAlignment="Left"  Validation.ErrorTemplate="{StaticResource validationErrorTemplate}">
+                                                <TextBox.Text>
+                                                    <Binding Path="Point_Value" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged">
+                                                        <Binding.ValidationRules>
+                                                            <local:NameValidator></local:NameValidator>
+                                                        </Binding.ValidationRules>
+                                                    </Binding>
+                                                </TextBox.Text>
+                                            </TextBox>
+                                            <Rectangle Height="2" Margin="2,0,0,0" Fill="{DynamicResource MediumGray}" Width="100" HorizontalAlignment="Left"/>
+                                        </StackPanel>
+                                    </DockPanel>
+                                </Grid>
+
+                                <!--Section-->
+                                <Grid Margin="0,5,0,5" Visibility="{Binding RelativeSource={RelativeSource AncestorType=ListView}, Path=DataContext.HasSections, Mode=TwoWay, Converter={StaticResource BoolToVis}}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="120"/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Section:" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    <ComboBox Grid.Column="1" Height="25" Width="200" HorizontalAlignment="Left" VerticalAlignment="Center" 
+                                          SelectedItem="{Binding TestSection, Mode=TwoWay}" ItemsSource="{Binding RelativeSource={RelativeSource AncestorType=ListView}, Path=DataContext.Sections}"
+                                          DisplayMemberPath="Name">
+                                    </ComboBox>
+                                </Grid>
+
+                                <!--Delete-->
+                                <Button Content="Delete Question" Grid.Column="1" Margin="0,5,0,5" HorizontalAlignment="Center" Style="{StaticResource RedTextBtn}" Command="{Binding DeleteQuestion}"/>
+                            </StackPanel>
+                        </Border>
+                        <local:NewPlaceHolder/>
+                    </DockPanel>
+                </DataTemplate>
+            </ListView.Resources>
+            <ListView.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel Width="{Binding (FrameworkElement.ActualWidth), RelativeSource={RelativeSource AncestorType=ScrollContentPresenter}}"/>
+                </ItemsPanelTemplate>
+            </ListView.ItemsPanel>
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="ListViewItem">
+                                <Border BorderThickness="{TemplateBinding Border.BorderThickness}"
+                                        Padding="{TemplateBinding Control.Padding}"
+                                        BorderBrush="{TemplateBinding Border.BorderBrush}"
+                                        Background="{TemplateBinding Background}"
+                                        Name="Bd"
+                                        SnapsToDevicePixels="True">
+                                    <ContentPresenter Content="{TemplateBinding ContentControl.Content}"
+                                                      ContentTemplate="{TemplateBinding ContentControl.ContentTemplate}"
+                                                      ContentStringFormat="{TemplateBinding ContentControl.ContentStringFormat}"
+                                                      HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}"
+                                                      VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}"
+                                                      SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" />
+                                </Border>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                    <Style.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="IsSelected" Value="True"/>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </ListView.ItemContainerStyle>
+        </ListView>
+    </DockPanel>
+</UserControl>

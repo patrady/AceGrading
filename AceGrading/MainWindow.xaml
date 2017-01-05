@@ -1,0 +1,91 @@
+﻿<Window x:Class="AceGrading.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:AceGrading"
+        xmlns:converters="clr-namespace:System.Windows.Controls;assembly=PresentationFramework" 
+        mc:Ignorable="d"
+        Title="MainWindow" Height="900" Width="1500" FontFamily="CalibriLight" 
+        WindowState="Maximized" Background="{DynamicResource BackColor}" Foreground="DarkGray" FontSize="15">
+    <Window.Resources>
+        <local:MainViewModel x:Key="ViewModel"/>
+        <Style TargetType="{x:Type ToggleButton}">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border Background="{TemplateBinding Background}">
+                            <TextBlock Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <ContentPresenter/>
+                            </TextBlock>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{StaticResource MediumGray}"/>
+                </Trigger>
+                <Trigger Property="IsMouseOver" Value="False">
+                    <Setter Property="Background" Value="{StaticResource SeaBlue}"/>
+                </Trigger>
+                <Trigger Property="IsChecked" Value="True">
+                    <Setter Property="Background" Value="{StaticResource OffWhite}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+    <Grid DataContext="{Binding Source={StaticResource ViewModel}}">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="{DynamicResource SquareDim}"/>
+            <ColumnDefinition Width="{DynamicResource RectDim}"/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <Grid Background="{DynamicResource SeaBlue}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="{DynamicResource SquareDim}"/>
+                    <RowDefinition Height="{DynamicResource SquareDim}"/>
+                    <RowDefinition Height="{DynamicResource SquareDim}"/>
+                    <RowDefinition Height="{DynamicResource SquareDim}"/>
+                    <RowDefinition Height="{DynamicResource SquareDim}"/>
+                    <RowDefinition Height="{DynamicResource SquareDim}"/>
+                </Grid.RowDefinitions>
+                <RadioButton x:Name="HomeMenu_TgleBtn" Style="{StaticResource {x:Type ToggleButton}}">
+                    <Image Source="pack://application:,,,/Icons/BaseIcons/HamburgerMenu.png" Margin="10"/>
+                </RadioButton>
+                
+                <!--Class Toggle Button-->
+                <RadioButton x:Name="Class_TgleBtn" Grid.Row="1" Style="{StaticResource {x:Type ToggleButton}}" IsChecked="True" ToolTip="Classes">
+                    <Grid>
+                        <Ellipse Grid.Row="1" Height="{DynamicResource SmallProfilePic}" Width="{DynamicResource SmallProfilePic}" Fill="{DynamicResource RoyalSeaBlue}"/>
+                        <TextBlock Text="{Binding SelectedClass.Class_Initials}" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White"/>
+                    </Grid>
+                </RadioButton>
+                
+                <!--Test Toggle Button-->
+                <RadioButton x:Name="Test_TgleBtn" Grid.Row="2" Style="{StaticResource {x:Type ToggleButton}}" ToolTip="Tests"> 
+                    <Image Source="pack://application:,,,/Icons/BaseIcons/Test.png" Margin="10"/>
+                </RadioButton>
+                <Image Source="pack://application:,,,/Icons/BaseIcons/Test_Selected.png" Margin="10" Grid.Row="2" Visibility="{Binding ElementName=Test_TgleBtn, Path=IsChecked, Converter={StaticResource BoolToVis}}"/>
+                
+                <!--Test Taking Toggle Button-->
+                <RadioButton x:Name="TestTaking_TgleBtn" Grid.Row="3" Style="{StaticResource {x:Type ToggleButton}}">
+                    <Image Source="pack://application:,,,/Icons/BaseIcons/Checkmark.png" Margin="10"/>
+                </RadioButton>
+            </Grid>
+        </Grid>
+        
+        <Grid Grid.Column="1" Visibility="{Binding ElementName=Class_TgleBtn, Path=IsChecked, Converter={StaticResource BoolToVis}}">
+            <local:RosterManagement/>
+        </Grid>
+
+        <Grid Grid.Column="1" Grid.ColumnSpan="2" Visibility="{Binding ElementName=Test_TgleBtn, Path=IsChecked, Converter={StaticResource BoolToVis}}">
+            <local:TestManagement/>
+        </Grid>
+
+        <Grid Grid.Column="1" Grid.ColumnSpan="2" Visibility="{Binding ElementName=TestTaking_TgleBtn, Path=IsChecked, Converter={StaticResource BoolToVis}}">
+            <local:TestTakingManagement/>
+        </Grid>
+    </Grid>
+</Window>
