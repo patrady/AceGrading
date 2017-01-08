@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -16,11 +17,11 @@ namespace AceGrading
                     Class_Name = "Theology IV",
                     Students = new ObservableCollection<Student>()
                     {
-                        new Student() {Name = "Robert Brady" },
-                        new Student() {Name = "Julie Brady" },
-                        new Student() {Name = "Kristen Duke" },
-                        new Student() {Name = "Joe Cloud" },
-                        new Student() {Name = "Nick Nocholi" },
+                        new Student() {StudentName = "Robert Brady" },
+                        new Student() {StudentName = "Julie Brady" },
+                        new Student() {StudentName = "Kristen Duke" },
+                        new Student() {StudentName = "Joe Cloud" },
+                        new Student() {StudentName = "Nick Nocholi" },
                     },
                     Tests = new ObservableCollection<Test>()
                     {
@@ -34,11 +35,11 @@ namespace AceGrading
                     Class_Name = "History / Geography",
                     Students = new ObservableCollection<Student>()
                     {
-                        new Student() {Name = "Joseph Herring" },
-                        new Student() {Name = "Alberto Rudeo" },
-                        new Student() {Name = "Laura Cook" },
-                        new Student() {Name = "PJ Biyani" },
-                        new Student() {Name = "Kartik Gupta" },
+                        new Student() {StudentName = "Joseph Herring" },
+                        new Student() {StudentName = "Alberto Rudeo" },
+                        new Student() {StudentName = "Laura Cook" },
+                        new Student() {StudentName = "PJ Biyani" },
+                        new Student() {StudentName = "Kartik Gupta" },
                     },
                     Tests = new ObservableCollection<Test>()
                     {
@@ -163,18 +164,53 @@ namespace AceGrading
         public Student()
         {
             StudentInitials = new Initials();
-            this.Name = this.DefaultName;
+            this.StudentName = this.DefaultName;
 
-            Student_Test_Answers = new List<Student_Answer>();
+            TestAnswers = new List<Student_Answer>();
             Bonus_Points = 0;
-            StartTest_Column = -1;
-            StartTest_Row = -1;
-            Database_ID = -1;
+            DatabaseID = -1;
             LoginKey = 1234;
+            this.Status = Online_Status.Offline;
         }
 
         //Variables
-        public string Name
+        public Online_Status Status
+        {
+            get { return _Status; }
+            set
+            {
+                if (value != _Status)
+                {
+                    _Status = value;
+                    OnPropertyChanged("Status");
+                }
+            }
+        }
+        public Wifi_Status WifiUsage
+        {
+            get { return _WifiUsage; }
+            set
+            {
+                if (value != _WifiUsage)
+                {
+                    _WifiUsage = value;
+                    OnPropertyChanged("WifiUsage");
+                }
+            }
+        }
+        public Cheating_Role CheatingRole
+        {
+            get { return _CheatingRole; }
+            set
+            {
+                if (value != _CheatingRole)
+                {
+                    _CheatingRole = value;
+                    OnPropertyChanged("CheatingRole");
+                }
+            }
+        }
+        public string StudentName
         {
             get { return _Name; }
             set
@@ -190,27 +226,107 @@ namespace AceGrading
         }
         public string DefaultName { get { return "Student Name"; } }
         public string Initials { get { return _Initials; } }
-        public double Test_Score
+        public double TestScore
         {
-            get
+            get { return _TestScore; }
+            set
             {
-                double score = 0;
-
-                //Tallies up the student's test score
-                foreach (Student_Answer answer in Student_Test_Answers)
-                    if (answer.Has_Been_Graded)
-                        score += answer.Points_Received;
-
-                return score + Bonus_Points;
+                if (value != _TestScore)
+                {
+                    _TestScore = value;
+                    OnPropertyChanged("Test_Score");
+                }
             }
         }
-        public object Database_ID { get; set; }
+        public double TestProgress
+        {
+            get { return Math.Round(_TestProgress, 2); }
+            set
+            {
+                if (value != _TestProgress)
+                {
+                    _TestProgress = value;
+                    OnPropertyChanged("TestProgress");
+                }
+            }
+        }
+        public object DatabaseID { get; set; }
+        public object ServerID { get; set; }
+        public bool IsCheating
+        {
+            get { return _IsCheating; }
+            set
+            {
+                if (value != _IsCheating)
+                {
+                    _IsCheating = value;
+                    OnPropertyChanged("IsCheating");
+                }
+            }
+        }
+        public bool IsInClassroom
+        {
+            get { return _IsInClassroom; }
+            set
+            {
+                if (value != _IsInClassroom)
+                {
+                    _IsInClassroom = value;
+                    OnPropertyChanged("IsInClassroom");
+                }
+            }
+        }
+        public bool WifiDetected
+        {
+            get { return _WifiDetected; }
+            set
+            {
+                if (value != _WifiDetected)
+                {
+                    _WifiDetected = value;
+                    OnPropertyChanged("WifiDetected");
+                }
+            }
+        }
         public double Bonus_Points { get; set; }
-        public int StartTest_Row { get; set; }
-        public int StartTest_Column { get; set; }
-        public List<Student_Answer> Student_Test_Answers { get; set; }
+        public List<Student_Answer> TestAnswers { get; set; }
         private Initials StudentInitials;
-        public int LoginKey { get; set; }
+        public int LoginKey
+        {
+            get { return _LoginKey; }
+            set
+            {
+                if (value != _LoginKey)
+                {
+                    _LoginKey = value;
+                    OnPropertyChanged("LoginKey");
+                }
+            }
+        }
+        public int RowIndex
+        {
+            get { return _RowIndex; }
+            set
+            {
+                if (value != _RowIndex)
+                {
+                    _RowIndex = value;
+                    OnPropertyChanged("RowIndex");
+                }
+            }
+        }
+        public int ColumnIndex
+        {
+            get { return _ColumnIndex; }
+            set
+            {
+                if (value != _ColumnIndex)
+                {
+                    _ColumnIndex = value;
+                    OnPropertyChanged("ColumnIndex");
+                }
+            }
+        }
 
         //Methods
 
@@ -230,7 +346,17 @@ namespace AceGrading
 
         //Private Variables
         private string _Name, _Initials;
+        private double _TestScore, _TestProgress;
+        private int _RowIndex, _ColumnIndex, _LoginKey;
+        private bool _IsInClassroom, _WifiDetected, _IsCheating;
+        private Online_Status _Status;
+        private Wifi_Status _WifiUsage;
+        private Cheating_Role _CheatingRole;
     }
+
+    public enum Online_Status { Offline, Online, Finished };
+    public enum Wifi_Status { UsingWifi, AbstainingWifi };
+    public enum Cheating_Role { Perpetrator, Victim, Uncertain };
 
     public class ReturnValidation
     {
@@ -354,16 +480,16 @@ namespace AceGrading
         public ReturnValidation Add_Student(Student student)
         {
             //Check if empty
-            if (student.Name == null || student.Name == "")
+            if (student.StudentName == null || student.StudentName == "")
                 return new ReturnValidation(_IsOk: false, _Header: "Add Student", _Body: "A student must receive a valid name.");
 
             //Check if the student name matches any other student names
             foreach (Student tempStudent in this.Students)
-                if (tempStudent.Name.ToLower() == student.Name.ToLower())
+                if (tempStudent.StudentName.ToLower() == student.StudentName.ToLower())
                     return new ReturnValidation(_IsOk: false, _Header: "Add Student", _Body: "A student by this name already exists, please choose another name.");
 
             //Add the student since no other student has the name
-            this.Students.Add(new Student() { Name = student.Name });
+            this.Students.Add(new Student() { StudentName = student.StudentName });
             return new ReturnValidation(_IsOk: true);
         }
         public ReturnValidation Add_Test(Test test)
@@ -385,16 +511,16 @@ namespace AceGrading
         public ReturnValidation ReName_Student(Student student, string NewName)
         {
             //Check if empty
-            if (student.Name == null || student.Name == "")
+            if (student.StudentName == null || student.StudentName == "")
                 return new ReturnValidation(_IsOk: false, _Header: "Rename Student", _Body: "A student must receive a valid name.");
 
             //Check if the student name matches any other student names
             foreach (Student tempStudent in this.Students)
-                if (NewName.ToLower() == tempStudent.Name.ToLower())
+                if (NewName.ToLower() == tempStudent.StudentName.ToLower())
                     if (tempStudent != student)
                         return new ReturnValidation(_IsOk: false, _Header: "Rename Student", _Body: "A student by this name already exists.");
 
-            student.Name = NewName;
+            student.StudentName = NewName;
             return new ReturnValidation(_IsOk: true);
         }
         public ReturnValidation ReName_Test(Test test, string NewName)

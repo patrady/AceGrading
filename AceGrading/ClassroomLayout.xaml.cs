@@ -15,11 +15,11 @@ using System.Windows.Shapes;
 namespace AceGrading
 {
     /// <summary>
-    /// Interaction logic for UserControl1.xaml
+    /// Interaction logic for ClassroomLayout.xaml
     /// </summary>
-    public partial class UserControl1 : UserControl
+    public partial class ClassroomLayout : UserControl
     {
-        public UserControl1()
+        public ClassroomLayout()
         {
             InitializeComponent();
         }

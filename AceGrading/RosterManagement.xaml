@@ -117,7 +117,7 @@
                                     </Grid.ColumnDefinitions>
                                     <Ellipse Height="{DynamicResource SmallProfilePic}" Width="{DynamicResource SmallProfilePic}" Fill="{DynamicResource BrightBlue}"/>
                                     <TextBlock Text="{Binding Initials}" VerticalAlignment="Center" Foreground="White" HorizontalAlignment="Center"/>
-                                    <TextBlock Text="{Binding Name}" Grid.Column="1" Margin="10,0,0,0" Foreground="{DynamicResource DarkGray}" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding StudentName}" Grid.Column="1" Margin="10,0,0,0" Foreground="{DynamicResource DarkGray}" VerticalAlignment="Center"/>
                                 </Grid>
                             </DataTemplate>
                         </ListBox.ItemTemplate>
@@ -139,7 +139,7 @@
                 <Button Content="Finish" Style="{DynamicResource BlueTextBtn}" HorizontalAlignment="Right" VerticalAlignment="Center" Click="EditStudentFinish_Click"/>
 
                 <StackPanel Grid.Row="3">
-                    <TextBox Text="{Binding SelectedStudent.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Grid.Row="1" FontSize="20" SelectionBrush="{DynamicResource SeaBlue}" TextAlignment="Center"/>
+                    <TextBox Text="{Binding SelectedStudent.StudentName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Grid.Row="1" FontSize="20" SelectionBrush="{DynamicResource SeaBlue}" TextAlignment="Center"/>
                     <Rectangle Height="2" Margin="2" Fill="{DynamicResource MediumGray}"/>
                     <TextBlock Text="{Binding Class_Name}" Grid.Row="1" HorizontalAlignment="Center"/>
                     <Button Style="{StaticResource RedTextBtn}" Content="Delete Student" Margin="0,20,0,0" Command="{Binding DeleteStudent}" Click="DeleteStudent_Click">
@@ -159,7 +159,7 @@
                 <TextBlock Text="{Binding NewStudent.Initials, FallbackValue='AA'}" Grid.Row="1" Grid.RowSpan="2" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="60" Foreground="White"/>
 
                 <StackPanel Grid.Row="3">
-                    <TextBox Name="newStudentName" Text="{Binding Path=NewStudent.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Grid.Row="1" FontSize="20" SelectionBrush="{DynamicResource SeaBlue}" TextAlignment="Center"/>
+                    <TextBox Name="newStudentName" Text="{Binding Path=NewStudent.StudentName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Grid.Row="1" FontSize="20" SelectionBrush="{DynamicResource SeaBlue}" TextAlignment="Center"/>
                     <Rectangle Height="2" Margin="2" Fill="{DynamicResource MediumGray}"/>
                     <TextBlock Text="{Binding Class_Name, FallbackValue='Class Name'}" Grid.Row="1" HorizontalAlignment="Center"/>
                 </StackPanel>
@@ -209,7 +209,7 @@
                                             </Grid.ColumnDefinitions>
                                             <Ellipse Height="{DynamicResource SmallProfilePic}" Width="{DynamicResource SmallProfilePic}" Fill="{DynamicResource BrightBlue}"/>
                                             <TextBlock Text="{Binding Initials}" VerticalAlignment="Center" Foreground="White" HorizontalAlignment="Center"/>
-                                            <TextBlock Text="{Binding Name}" Grid.Column="1" Margin="10,0,0,0" Foreground="{DynamicResource DarkGray}" VerticalAlignment="Center"/>
+                                            <TextBlock Text="{Binding StudentName}" Grid.Column="1" Margin="10,0,0,0" Foreground="{DynamicResource DarkGray}" VerticalAlignment="Center"/>
                                         </Grid>
                                     </DataTemplate>
                                 </ListBox.Resources>
@@ -226,7 +226,7 @@
                                 </Grid>
                                 <StackPanel Grid.Column="1" Margin="2,2,0,0" VerticalAlignment="Center">
                                     <Grid>
-                                        <TextBox Text="{Binding SelectedClass.NewStudent.Name, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Grid.Row="1" SelectionBrush="{DynamicResource SeaBlue}">
+                                        <TextBox Text="{Binding SelectedClass.NewStudent.StudentName, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Grid.Row="1" SelectionBrush="{DynamicResource SeaBlue}">
                                             <TextBox.InputBindings>
                                                 <KeyBinding Key="Enter" Command="{Binding SelectedClass.AddStudent}"/>
                                             </TextBox.InputBindings>
@@ -253,7 +253,7 @@
                 <Button Content="Finish" Style="{DynamicResource BlueTextBtn}" HorizontalAlignment="Right" VerticalAlignment="Center" Click="EditStudentFinish2_Click"/>
 
                 <StackPanel Grid.Row="3">
-                    <TextBox Text="{Binding SelectedStudent.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Grid.Row="1" FontSize="20" SelectionBrush="{DynamicResource SeaBlue}" TextAlignment="Center"/>
+                    <TextBox Text="{Binding SelectedStudent.StudentName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Grid.Row="1" FontSize="20" SelectionBrush="{DynamicResource SeaBlue}" TextAlignment="Center"/>
                     <Rectangle Height="2" Margin="2" Fill="{DynamicResource MediumGray}"/>
                     <TextBlock Text="{Binding Class_Name}" Grid.Row="1" HorizontalAlignment="Center"/>
                     <Button Style="{StaticResource RedTextBtn}" Content="Delete Student" Margin="0,20,0,0" Command="{Binding DeleteStudent}" Click="EditStudentFinish2_Click">

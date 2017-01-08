@@ -56,9 +56,13 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="CircularProgressBar\CircProgBar.cs" />
+    <Compile Include="ClassroomLayout.xaml.cs">
+      <DependentUpon>ClassroomLayout.xaml</DependentUpon>
+    </Compile>
     <Compile Include="NewPlaceHolder.xaml.cs">
       <DependentUpon>NewPlaceHolder.xaml</DependentUpon>
     </Compile>
+    <Compile Include="TestObj\ClassStructure.cs" />
     <Compile Include="TestObj\Test.cs" />
     <Compile Include="Initials.cs" />
     <Compile Include="Question\Essay.cs" />
@@ -88,13 +92,18 @@
     <Compile Include="TestTakingManagement.xaml.cs">
       <DependentUpon>TestTakingManagement.xaml</DependentUpon>
     </Compile>
-    <Compile Include="UserControl1.xaml.cs">
-      <DependentUpon>UserControl1.xaml</DependentUpon>
+    <Compile Include="TimePicker.xaml.cs">
+      <DependentUpon>TimePicker.xaml</DependentUpon>
     </Compile>
     <Compile Include="ViewModels\ClassViewModel.cs" />
     <Compile Include="ViewModels\Commands\ViewModelCommands.cs" />
     <Compile Include="ViewModels\Converters\InverseBooleanToVisibility.cs" />
     <Compile Include="ViewModels\Validations\Validations.cs" />
+    <Compile Include="ViewModels\ViewClasses.cs" />
+    <Page Include="ClassroomLayout.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -127,7 +136,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="UserControl1.xaml">
+    <Page Include="TimePicker.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -157,21 +166,19 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Icons\BaseIcons\HamburgerMenu.png" />
+    <Resource Include="Icons\LoginKey.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Icons\BaseIcons\Checkmark.png" />
+    <Resource Include="Icons\cheating_alert.png" />
+    <Resource Include="Icons\Checkmark.png" />
+    <Resource Include="Icons\EditProfile.png" />
+    <Resource Include="Icons\HamburgerMenu.png" />
+    <Resource Include="Icons\Test.png" />
+    <Resource Include="Icons\Test_Selected.png" />
+    <Resource Include="Icons\wifi_bad.png" />
+    <Resource Include="Icons\wifi_good.png" />
   </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Icons\BaseIcons\Test.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Icons\BaseIcons\Test_Selected.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Icons\BaseIcons\wifi_bad.png" />
-    <Resource Include="Icons\BaseIcons\wifi_good.png" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

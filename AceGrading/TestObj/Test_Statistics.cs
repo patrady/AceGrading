@@ -7,34 +7,37 @@ namespace AceGrading
 {
     public class Test_Statistics : INotifyPropertyChanged
     {
+        //Constructors
         public Test_Statistics()
         {
             Random rand = new Random();
             //Used for debugging
             this.Students = new List<Student>()
             {
-                new Student() {Student_Test_Answers = new List<Student_Answer>() {new Student_Answer() { Points_Received = rand.Next(1, 100)} } },
-                new Student() {Student_Test_Answers = new List<Student_Answer>() {new Student_Answer() { Points_Received = rand.Next(1, 100) } } },
-                new Student() {Student_Test_Answers = new List<Student_Answer>() {new Student_Answer() { Points_Received = rand.Next(1, 100) } } },
-                new Student() {Student_Test_Answers = new List<Student_Answer>() {new Student_Answer() { Points_Received = rand.Next(1, 100) } } }
+                new Student() {TestAnswers = new List<Student_Answer>() {new Student_Answer() { Points_Received = rand.Next(1, 100)} } },
+                new Student() {TestAnswers = new List<Student_Answer>() {new Student_Answer() { Points_Received = rand.Next(1, 100) } } },
+                new Student() {TestAnswers = new List<Student_Answer>() {new Student_Answer() { Points_Received = rand.Next(1, 100) } } },
+                new Student() {TestAnswers = new List<Student_Answer>() {new Student_Answer() { Points_Received = rand.Next(1, 100) } } }
             };
             this.CalculateScores();
         }
-
         public Test_Statistics(int Num_Questions, List<Student> _Students)
         {
             Question_Correctly_Answered = new int[Num_Questions];
             Question_Attempted = new int[Num_Questions];
             Most_Missed_Problem = new List<int>();
             Students = _Students;
+            this.Highest_Test_Score = double.NegativeInfinity;
+            this.Lowest_Test_Score = double.PositiveInfinity;
+            this.Average_Test_Score = 0;
+            this.NumberOfScores = 0;
 
             Zero_Out_Arrays();
         }
 
+        //Public Attributes
         public int[] Question_Correctly_Answered { get; set; }
-
         public int[] Question_Attempted { get; set; }
-
         public double Highest_Test_Score
         {
             get { return _HighestScore; }
@@ -63,10 +66,11 @@ namespace AceGrading
             }
 
         }
-
         public List<int> Most_Missed_Problem { get; set; }
-
         public List<Student> Students { get; set; }
+
+        //Private Attributes
+        private int NumberOfScores { get; set; }
 
         //Public Methods
         public void CalculateScores()
@@ -74,6 +78,43 @@ namespace AceGrading
             this.CalculateHighestScore();
             this.CalculateAverageScore();
             this.CalculateLowestScore();
+        }
+        /// <summary>
+        /// Includes a score in the statistics.
+        /// </summary>
+        /// <param name="score">New score to be included.</param>
+        public void AddScore(double score)
+        {
+            //Check if score is higher than the highet
+            if (score > this.Highest_Test_Score)
+                this.Highest_Test_Score = score;
+
+            //Check if the score is lower than the lowest
+            if (score < this.Lowest_Test_Score)
+                this.Lowest_Test_Score = score;
+
+            //Change the average to include the new score
+            if (this.NumberOfScores == 0)
+                this.Average_Test_Score = score;
+            else
+                this.Average_Test_Score = ((this.Average_Test_Score) * (this.NumberOfScores) + score) / (this.NumberOfScores + 1);
+            this.NumberOfScores++;
+        }
+        /// Includes a score in the statistics by first calculating the score the student made.
+        /// </summary>
+        /// <param name="student">The student to have their score calculated.</param>
+        /// <returns>Returns the score the student received.</returns>
+        public double AddScore(Student student)
+        {
+            double tempScore = 0;
+            tempScore = 0;
+            tempScore += student.Bonus_Points;
+            tempScore += student.TestAnswers.Sum(x => x.Points_Received);
+
+            //Add the score into the statistics
+            this.AddScore(student.TestScore);
+
+            return tempScore;
         }
 
         //Private Methods
@@ -88,7 +129,7 @@ namespace AceGrading
                 student_score += student.Bonus_Points;
 
                 //Tallies up the student's test score
-                foreach (Student_Answer answer in student.Student_Test_Answers)
+                foreach (Student_Answer answer in student.TestAnswers)
                     student_score += answer.Points_Received;
 
                 //Compares for the highest score
@@ -109,7 +150,7 @@ namespace AceGrading
                 student_score += student.Bonus_Points;
 
                 //Tallies up the student's test score
-                foreach (Student_Answer answer in student.Student_Test_Answers)
+                foreach (Student_Answer answer in student.TestAnswers)
                     student_score += answer.Points_Received;
 
                 //Compares for the highest score
@@ -135,7 +176,7 @@ namespace AceGrading
                 student_score += student.Bonus_Points;
 
                 //Tallies up the student's test score
-                foreach (Student_Answer answer in student.Student_Test_Answers)
+                foreach (Student_Answer answer in student.TestAnswers)
                     student_score += answer.Points_Received;
 
                 //Compares for the highest score

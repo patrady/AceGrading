@@ -23,5 +23,30 @@ namespace AceGrading
         {
             InitializeComponent();
         }
+
+        private void StartTestSelection_Click(object sender, RoutedEventArgs e)
+        {
+            ClassroomGrid.Visibility = Visibility.Visible;
+            TestSetup_Grid.Visibility = Visibility.Visible;
+        }
+
+        private void BackToTestSelection_Click(object sender, RoutedEventArgs e)
+        {
+            TestSetup_Grid.Visibility = Visibility.Hidden;
+            ClassroomGrid.Visibility = Visibility.Hidden;
+        }
+
+        private void StartTest_Click(object sender, RoutedEventArgs e)
+        {
+            TestSetup_Grid.Visibility = Visibility.Hidden;
+            StartTest_Grid.Visibility = Visibility.Visible;
+        }
+
+        private void EndTest_Click(object sender, RoutedEventArgs e)
+        {
+            StartTest_Grid.Visibility = Visibility.Hidden;
+            TestSetup_Grid.Visibility = Visibility.Hidden;
+            ClassroomGrid.Visibility = Visibility.Hidden;
+        }
     }
 }

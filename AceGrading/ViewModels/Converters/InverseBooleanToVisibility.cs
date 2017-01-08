@@ -36,4 +36,18 @@ namespace AceGrading
             base(Visibility.Hidden, Visibility.Visible)
         { }
     }
+
+    public sealed class BooleanToCollapseConverter : BooleanConverter<Visibility>
+    {
+        public BooleanToCollapseConverter() :
+            base(Visibility.Visible, Visibility.Collapsed)
+        { }
+    }
+
+    public sealed class InverseBooleanToCollapseConverter : BooleanConverter<Visibility>
+    {
+        public InverseBooleanToCollapseConverter() :
+            base(Visibility.Collapsed, Visibility.Visible)
+        { }
+    }
 }

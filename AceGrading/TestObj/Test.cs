@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Windows;
 using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace AceGrading
 {
@@ -23,6 +25,12 @@ namespace AceGrading
             AddEssay = new AddEssayQuestion_Command(this);
             AddSection = new AddTestSection_Command(this);
             DeleteSection = new DeleteTestSection_Command(this);
+            IncrementHour = new TestTimeIncrementHours_Command(this);
+            IncrementMinute = new TestTimeIncrementMinutes_Command(this);
+            DecrementHour = new TestTimeDecrementHours_Command(this);
+            DecrementMinute = new TestTimeDecrementMinutes_Command(this);
+            IncrementAMPM = new TestTimeIncrementAMPM_Command(this);
+            DecrementAMPM = new TestTimeDecrementAMPM_Command(this);
             Statistics = new Test_Statistics();
             TestName = "Test Name";
             Upload_File = null;
@@ -33,6 +41,9 @@ namespace AceGrading
             Has_Student_Answers = false;
             Upload_File_Name = null;
             Server_ID = null;
+            IsPaused = false;
+            ClassLayout = new ClassStructure();
+            EndTime = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, DateTime.Now.Hour, DateTime.Now.Minute, 0);
         }
 
         //Attributes
@@ -48,6 +59,7 @@ namespace AceGrading
             }
         }
         public ObservableCollection<Question> Answers { get; set; }
+        public ClassStructure ClassLayout { get; set; }
         public string Initials { get { return _Initials; } }
         public double Point_Worth
         {
@@ -126,6 +138,18 @@ namespace AceGrading
                 }
             }
         }
+        public bool IsPaused
+        {
+            get { return _IsPaused; }
+            set
+            {
+                if (value != _IsPaused)
+                {
+                    _IsPaused = value;
+                    OnPropertyChanged("IsPaused");
+                }
+            }
+        }
         public bool HasSections
         {
             get { return _HasSections; }
@@ -186,6 +210,18 @@ namespace AceGrading
                 {
                     _EndTime = value;
                     OnPropertyChanged("EndTime");
+                }
+            }
+        }
+        public TimeSpan TimeRemaining
+        {
+            get { return _TimeRemaining; }
+            set
+            {
+                if (value != _TimeRemaining)
+                {
+                    _TimeRemaining = value;
+                    OnPropertyChanged("TimeRemaining");
                 }
             }
         }
@@ -272,8 +308,55 @@ namespace AceGrading
         {
             this.PointsRemaining += (PreviousPointWorth - NewPointWorth);
         }
-        public void TimeIncrementHour() { this.EndTime.AddHours(1.0); }
-        public void TimeDecrementHours() { this.EndTime.AddHours(-1.0); }
+        public void TimeIncrementHour()
+        {
+            this.EndTime = this.EndTime.AddHours(1);
+            CheckIncrementTime();
+        }
+        public void TimeDecrementHours()
+        {
+            this.EndTime = this.EndTime.AddHours(-1);
+            CheckDecrementTime();
+        }
+        public void TimeIncrementMinutes()
+        {
+            this.EndTime = this.EndTime.AddMinutes(1);
+            CheckIncrementTime();
+        }
+        public void TimeDecrementMinutes()
+        {
+            this.EndTime = this.EndTime.AddMinutes(-1);
+            CheckDecrementTime();
+        }
+        public void TimeIncrementAMPM()
+        {
+            this.EndTime = this.EndTime.AddHours(12);
+            CheckIncrementTime();
+        }
+        public void TimeDecrementAMPM()
+        {
+            this.EndTime = this.EndTime.AddHours(-12);
+            CheckDecrementTime();
+        }
+        public void StartTimeCountdown()
+        {
+            this.TimeRemaining = this.EndTime.Subtract(DateTime.Now);
+            TimeCountdown = new DispatcherTimer(new TimeSpan(0, 0, 1), DispatcherPriority.Normal, 
+                                                delegate
+                                                {
+                                                    if (TimeRemaining == TimeSpan.Zero) TimeCountdown.Stop();
+                                                    TimeRemaining = TimeRemaining.Add(TimeSpan.FromSeconds(-1));
+                                                }, Application.Current.Dispatcher);
+
+            TimeCountdown.Start();
+        }
+        public void StopTimeCountdown()
+        {
+            if (TimeCountdown != null)
+                if (TimeCountdown.IsEnabled)
+                    TimeCountdown.Stop();
+        }
+
 
         //Commands
         public Browse_Command Browse { get; set; }
@@ -285,6 +368,24 @@ namespace AceGrading
         public AddEssayQuestion_Command AddEssay { get; set; }
         public AddTestSection_Command AddSection { get; set; }
         public DeleteTestSection_Command DeleteSection { get; set; }
+        public TestTimeIncrementHours_Command IncrementHour { get; set; }
+        public TestTimeIncrementMinutes_Command IncrementMinute { get; set; }
+        public TestTimeDecrementHours_Command DecrementHour { get; set; }
+        public TestTimeDecrementMinutes_Command DecrementMinute { get; set; }
+        public TestTimeIncrementAMPM_Command IncrementAMPM { get; set; }
+        public TestTimeDecrementAMPM_Command DecrementAMPM { get; set; }
+
+        //Private Methods
+        private void CheckDecrementTime()
+        {
+            if (this.EndTime < DateTime.Now)
+                this.EndTime = this.EndTime.AddHours(24);
+        }
+        private void CheckIncrementTime()
+        {
+            if (this.EndTime > DateTime.Now.AddHours(24))
+                this.EndTime = this.EndTime.AddHours(-24);
+        }
 
         //INotifyPropertyChanged
         public event PropertyChangedEventHandler PropertyChanged;
@@ -292,21 +393,16 @@ namespace AceGrading
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
-        protected bool SetField<T>(ref T field, T value, string propertyName)
-        {
-            if (EqualityComparer<T>.Default.Equals(field, value)) return false;
-            field = value;
-            OnPropertyChanged(propertyName);
-            return true;
-        }
 
         //Private Variables
         private string _Initials, _Test_Name, _UploadFileName;
-        private bool _IndividualPoints, _HasSections;
+        private bool _IndividualPoints, _HasSections, _IsPaused;
         private double _PointsRemaining, _PointWorth;
         private Initials TestInitials;
         private Test_Statistics _TestStats;
         private DateTime _EndTime;
+        private TimeSpan _TimeRemaining;
+        private DispatcherTimer TimeCountdown;
     }
 
     public class AddMultipleChoiceQuestion_Command : ICommand
@@ -450,5 +546,59 @@ namespace AceGrading
             }
 
         }
+    }
+
+    public class TestTimeIncrementHours_Command : ICommand
+    {
+        Test test;
+        public event EventHandler CanExecuteChanged;
+        public TestTimeIncrementHours_Command(Test _Test) { test = _Test; }
+        public bool CanExecute(object parameter) { return true; }
+        public void Execute(object parameter) { this.test.TimeIncrementHour(); }
+    }
+
+    public class TestTimeIncrementMinutes_Command : ICommand
+    {
+        Test test;
+        public event EventHandler CanExecuteChanged;
+        public TestTimeIncrementMinutes_Command(Test _Test) { test = _Test; }
+        public bool CanExecute(object parameter) { return true; }
+        public void Execute(object parameter) { this.test.TimeIncrementMinutes(); }
+    }
+
+    public class TestTimeDecrementHours_Command : ICommand
+    {
+        Test test;
+        public event EventHandler CanExecuteChanged;
+        public TestTimeDecrementHours_Command(Test _Test) { test = _Test; }
+        public bool CanExecute(object parameter) { return true; }
+        public void Execute(object parameter) { this.test.TimeDecrementHours(); }
+    }
+
+    public class TestTimeDecrementMinutes_Command : ICommand
+    {
+        Test test;
+        public event EventHandler CanExecuteChanged;
+        public TestTimeDecrementMinutes_Command(Test _Test) { test = _Test; }
+        public bool CanExecute(object parameter) { return true; }
+        public void Execute(object parameter) { this.test.TimeDecrementMinutes(); }
+    }
+
+    public class TestTimeIncrementAMPM_Command : ICommand
+    {
+        Test test;
+        public event EventHandler CanExecuteChanged;
+        public TestTimeIncrementAMPM_Command(Test _Test) { test = _Test; }
+        public bool CanExecute(object parameter) { return true; }
+        public void Execute(object parameter) { this.test.TimeIncrementAMPM(); }
+    }
+
+    public class TestTimeDecrementAMPM_Command : ICommand
+    {
+        Test test;
+        public event EventHandler CanExecuteChanged;
+        public TestTimeDecrementAMPM_Command(Test _Test) { test = _Test; }
+        public bool CanExecute(object parameter) { return true; }
+        public void Execute(object parameter) { this.test.TimeDecrementAMPM(); }
     }
 }

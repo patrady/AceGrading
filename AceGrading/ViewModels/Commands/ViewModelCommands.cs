@@ -39,13 +39,13 @@ namespace AceGrading
 
         public void Execute(object parameter)
         {
-            if (this.thisClass.NewStudent.Name != this.thisClass.NewStudent.DefaultName)
+            if (this.thisClass.NewStudent.StudentName != this.thisClass.NewStudent.DefaultName)
             {
                 thisClass.Add_Student(thisClass.NewStudent);
             }
 
             //Reset to normal
-            thisClass.NewStudent.Name = "";
+            thisClass.NewStudent.StudentName = "";
         }
     }
 

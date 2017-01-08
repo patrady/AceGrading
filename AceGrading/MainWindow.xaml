@@ -52,7 +52,7 @@
                     <RowDefinition Height="{DynamicResource SquareDim}"/>
                 </Grid.RowDefinitions>
                 <RadioButton x:Name="HomeMenu_TgleBtn" Style="{StaticResource {x:Type ToggleButton}}">
-                    <Image Source="pack://application:,,,/Icons/BaseIcons/HamburgerMenu.png" Margin="10"/>
+                    <Image Source="pack://application:,,,/Icons/HamburgerMenu.png" Margin="10"/>
                 </RadioButton>
                 
                 <!--Class Toggle Button-->
@@ -65,13 +65,13 @@
                 
                 <!--Test Toggle Button-->
                 <RadioButton x:Name="Test_TgleBtn" Grid.Row="2" Style="{StaticResource {x:Type ToggleButton}}" ToolTip="Tests"> 
-                    <Image Source="pack://application:,,,/Icons/BaseIcons/Test.png" Margin="10"/>
+                    <Image Source="pack://application:,,,/Icons/Test.png" Margin="10"/>
                 </RadioButton>
-                <Image Source="pack://application:,,,/Icons/BaseIcons/Test_Selected.png" Margin="10" Grid.Row="2" Visibility="{Binding ElementName=Test_TgleBtn, Path=IsChecked, Converter={StaticResource BoolToVis}}"/>
+                <Image Source="pack://application:,,,/Icons/Test_Selected.png" Margin="10" Grid.Row="2" Visibility="{Binding ElementName=Test_TgleBtn, Path=IsChecked, Converter={StaticResource BoolToVis}}"/>
                 
                 <!--Test Taking Toggle Button-->
                 <RadioButton x:Name="TestTaking_TgleBtn" Grid.Row="3" Style="{StaticResource {x:Type ToggleButton}}">
-                    <Image Source="pack://application:,,,/Icons/BaseIcons/Checkmark.png" Margin="10"/>
+                    <Image Source="pack://application:,,,/Icons/Checkmark.png" Margin="10"/>
                 </RadioButton>
             </Grid>
         </Grid>
