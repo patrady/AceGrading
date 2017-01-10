@@ -10,47 +10,30 @@ namespace AceGrading
     {
         public MainViewModel()
         {
-            this.Classes = new ObservableCollection<Class>()
-            {
-                new Class()
-                {
-                    Class_Name = "Theology IV",
-                    Students = new ObservableCollection<Student>()
-                    {
-                        new Student() {StudentName = "Robert Brady" },
-                        new Student() {StudentName = "Julie Brady" },
-                        new Student() {StudentName = "Kristen Duke" },
-                        new Student() {StudentName = "Joe Cloud" },
-                        new Student() {StudentName = "Nick Nocholi" },
-                    },
-                    Tests = new ObservableCollection<Test>()
-                    {
-                        new Test() { TestName = "Test #1", Upload_File_Name = @"C:\Users\rober\Desktop\pingpong.png", Point_Worth=100, Statistics = new Test_Statistics(), Is_Graded = true, HighestScore = 99},
-                        new Test() { TestName = "Test #2", Upload_File_Name = @"C:\Users\rober\Desktop\Doc1.docx", Point_Worth = 200, Statistics = new Test_Statistics(), Is_Graded = true, HighestScore = 98}
-                    },
-                    HasTests = true
-                },
-                new Class()
-                {
-                    Class_Name = "History / Geography",
-                    Students = new ObservableCollection<Student>()
-                    {
-                        new Student() {StudentName = "Joseph Herring" },
-                        new Student() {StudentName = "Alberto Rudeo" },
-                        new Student() {StudentName = "Laura Cook" },
-                        new Student() {StudentName = "PJ Biyani" },
-                        new Student() {StudentName = "Kartik Gupta" },
-                    },
-                    Tests = new ObservableCollection<Test>()
-                    {
-                        new Test() { TestName = "Test #3", Statistics = new Test_Statistics(), Is_Graded = true, HighestScore = 97},
-                        new Test() { TestName = "Test #4", Statistics = new Test_Statistics(), Is_Graded = true, HighestScore = 96 }
-                    },
-                    HasTests = true
-                }
-            };
+            this.Classes = new ObservableCollection<Class>();
 
-            this.HasClasses = true;
+            Class class1 = new Class();
+            class1.Class_Name = "Theology IV";
+            class1.Add_Student(new Student() { StudentName = "Robert Brady" });
+            class1.Add_Student(new Student() { StudentName = "Julie Brady" });
+            class1.Add_Student(new Student() { StudentName = "Kristen Duke" });
+            class1.Add_Student(new Student() { StudentName = "Joe Cloud" });
+            class1.Add_Student(new Student() { StudentName = "Nick Nocholi" });
+            class1.Add_Test(new Test() { TestName = "Test #1", Upload_File_Name = @"C:\Users\rober\Desktop\pingpong.png", Point_Worth = 100, Statistics = new Test_Statistics(), Is_Graded = true, HighestScore = 99 });
+            class1.Add_Test(new Test() { TestName = "Test #2", Upload_File_Name = @"C:\Users\rober\Desktop\Doc1.docx", Point_Worth = 200, Statistics = new Test_Statistics(), Is_Graded = true, HighestScore = 98 });
+
+            Class class2 = new Class();
+            class2.Class_Name = "History / Geography";
+            class2.Add_Student(new Student() { StudentName = "Joseph Herring"});
+            class2.Add_Student(new Student() { StudentName = "Alberto Rudeo"});
+            class2.Add_Student(new Student() { StudentName = "Laura Cook"});
+            class2.Add_Student(new Student() { StudentName = "PJ Biyani"});
+            class2.Add_Student(new Student() { StudentName = "Kartik Gupta"});
+            class2.Add_Test(new Test() { TestName = "Test #3", Statistics = new Test_Statistics(), Is_Graded = true, HighestScore = 97 });
+            class2.Add_Test(new Test() { TestName = "Test #4", Statistics = new Test_Statistics(), Is_Graded = true, HighestScore = 96 });
+
+            this.Add_Class(class1);
+            this.Add_Class(class2);
             this.DeleteClass = new DeleteClass_Command(this);
             this.AddClass = new AddClass_Command(this);
             this.PreAddClass = new PreAddClass_Command(this);
@@ -165,12 +148,14 @@ namespace AceGrading
         {
             StudentInitials = new Initials();
             this.StudentName = this.DefaultName;
-
+            this.RowIndex = -1;
+            this.ColumnIndex = -1;
             TestAnswers = new List<Student_Answer>();
             Bonus_Points = 0;
             DatabaseID = -1;
             LoginKey = 1234;
             this.Status = Online_Status.Offline;
+            this.WifiUsage = Wifi_Status.AbstainingWifi;
         }
 
         //Variables
@@ -355,7 +340,7 @@ namespace AceGrading
     }
 
     public enum Online_Status { Offline, Online, Finished };
-    public enum Wifi_Status { UsingWifi, AbstainingWifi };
+    public enum Wifi_Status { UsingWifi, AbstainingWifi, NotMonitored };
     public enum Cheating_Role { Perpetrator, Victim, Uncertain };
 
     public class ReturnValidation
@@ -410,11 +395,11 @@ namespace AceGrading
     {
         public Class()
         {
-            Students = new ObservableCollection<Student>();
-            Tests = new ObservableCollection<Test>();
-            ClassInitials = new Initials();
-            NewStudent = new Student();
-            NewTest = new Test();
+            this.Students = new ObservableCollection<Student>();
+            this.Tests = new ObservableCollection<Test>();
+            this.ClassInitials = new Initials();
+            this.NewStudent = new Student();
+            this.NewTest = new Test();
             this.HasTests = false;
             this.Class_Name = this.DefaultName;
             this.DeleteStudent = new DeleteStudent_Command(this);
@@ -422,6 +407,7 @@ namespace AceGrading
             this.PreAddTest = new PreAddTest_Command(this);
             this.AddTest = new AddTest_Command(this);
             this.DeleteTest = new DeleteTest_Command(this);
+            this.ClassLayout = new ClassStructure(this);
         }
 
         //Variables
@@ -475,6 +461,7 @@ namespace AceGrading
                 OnPropertyChanged("SelectedTest");
             }
         }
+        public ClassStructure ClassLayout { get; set; }
 
         //Methods
         public ReturnValidation Add_Student(Student student)
@@ -490,6 +477,11 @@ namespace AceGrading
 
             //Add the student since no other student has the name
             this.Students.Add(new Student() { StudentName = student.StudentName });
+
+            //Update other lists that reference this list
+            this.ClassLayout.RefreshDisjointStudents();
+
+            //Return
             return new ReturnValidation(_IsOk: true);
         }
         public ReturnValidation Add_Test(Test test)

@@ -172,7 +172,7 @@
                             <RowDefinition/>
                         </Grid.RowDefinitions>
                         <TextBlock Text="Test Taking Setup" VerticalAlignment="Center"/>
-                        <Button Content="Start" HorizontalAlignment="Right" VerticalAlignment="Center" Style="{StaticResource BlueTextBtn}" Click="StartTest_Click"/>
+                        <Button Content="Start" HorizontalAlignment="Right" VerticalAlignment="Center" Style="{StaticResource BlueTextBtn}" Click="StartTest_Click" Command="{Binding SelectedClass.SelectedTest.StartTest}"/>
                         <Button Content="Back" Style="{DynamicResource RedTextBtn}" VerticalAlignment="Top" HorizontalAlignment="Left" Click="BackToTestSelection_Click"/>
 
                         <!--Test Information-->
@@ -189,11 +189,11 @@
                             </Grid>
 
                             <TextBlock Text="{Binding SelectedClass.Class_Name, FallbackValue='Class Name'}" Margin="0,5,0,0" TextAlignment="Center" Foreground="Black"/>
-                            <TextBlock Text="{Binding SelectedClass.SelectedTest.TestName, FallbackValue='Test Name'}" Margin="0,2,0,0" TextAlignment="Center" Foreground="Black"/>
+                            <TextBlock Text="{Binding SelectedClass.SelectedTest.TestName, FallbackValue='Test Name'}" Margin="0,2,0,0" FontStyle="Italic" TextAlignment="Center" Foreground="Black"/>
                         </StackPanel>
 
                         <!--Rows and Columns-->
-                        <StackPanel Grid.Row="2" DataContext="{Binding SelectedClass.SelectedTest.ClassLayout}">
+                        <StackPanel Grid.Row="2" DataContext="{Binding SelectedClass.ClassLayout}">
                             <TextBlock Text="Classroom Arrangement"/>
                             <DockPanel Margin="{StaticResource SmallIndent}" HorizontalAlignment="Left">
                                 <StackPanel>
@@ -221,21 +221,20 @@
                         <StackPanel Grid.Row="3">
                             <TextBlock Text="Student Arrangement"/>
                             <Button Content="Alphabetical" Style="{StaticResource BlueTextBtn}" HorizontalAlignment="Left" Margin="{StaticResource SmallIndent}"
-                            ToolTip="Arrange Students Alphabetically"/>
+                                    ToolTip="Arrange Students Alphabetically"/>
                             <Button Content="Random" Style="{StaticResource BlueTextBtn}" HorizontalAlignment="Left" Margin="{StaticResource SmallIndent}"
-                            ToolTip="Arrange Students Randomly"/>
-                            <TextBlock Text="{Binding SelectedClass.Students.Count, StringFormat={}{0} Student(s) to Place, FallbackValue=10}" Foreground="Black" Margin="{StaticResource SmallIndent}"/>
+                                    ToolTip="Arrange Students Randomly"/>
+                            <TextBlock Text="{Binding SelectedClass.ClassLayout.DisjointStudents.Count, StringFormat={}{0} Student(s) to Place, FallbackValue='10 Students to Place'}" Foreground="Black" Margin="{StaticResource SmallIndent}"/>
                         </StackPanel>
 
                         <!--Time Picking-->
-                        <StackPanel Grid.Row="4" DataContext="{Binding SelectedClass.SelectedTest}">
+                        <StackPanel Grid.Row="4">
                             <TextBlock Text="Test Time"/>
-                            <local:TimePicker Foreground="Black"/>
+                            <local:TimePicker Foreground="Black" Time="{Binding SelectedClass.SelectedTest.EndTime, Mode=TwoWay}" LimitTo24Hour="True"/>
                         </StackPanel>
-
                     </Grid>
 
-                    <Grid Name="StartTest_Grid" Background="{Binding ElementName=Grid1, Path=Background}" Visibility="Hidden" d:IsHidden="True">
+                    <Grid Name="StartTest_Grid" Background="{Binding ElementName=Grid1, Path=Background}" d:IsHidden="True">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="{StaticResource SquareDim}"/>
                             <RowDefinition Height="{StaticResource ExtraLargeSquareDim}"/>
@@ -250,10 +249,9 @@
                         <StackPanel Grid.Row="4">
                             <TextBlock Text="Test Status"/>
                             <DockPanel Margin="{StaticResource SmallIndent}" HorizontalAlignment="Left">
-                                <RadioButton Content="Resume" Style="{DynamicResource OnSwitch}" Width="100" Height="30"/>
+                                <RadioButton Content="Resume" Style="{DynamicResource OnSwitch}" Width="100" Height="30" IsChecked="True"/>
                                 <RadioButton Style="{DynamicResource OffSwitch}" Content="Pause" Width="100" IsChecked="{Binding SelectedClass.SelectedTest.IsPaused, Mode=TwoWay}"/>
                             </DockPanel>
-
                         </StackPanel>
 
                         <!--Wifi Monitoring-->
@@ -261,7 +259,7 @@
                             <TextBlock Text="Internet Monitoring"/>
                             <DockPanel HorizontalAlignment="Left" Margin="{StaticResource SmallIndent}">
                                 <RadioButton Name="WifiTgleBtn" Content="Enable" Style="{DynamicResource OnSwitch}" 
-                                          Height="30" Width="100" HorizontalAlignment="Left" IsChecked="True"/>
+                                          Height="30" Width="100" HorizontalAlignment="Left" IsChecked="{Binding SelectedClass.SelectedTest.IsWifiDetectionEnabled, Mode=TwoWay}"/>
                                 <RadioButton Content="Disable" Style="{DynamicResource OffSwitch}"
                                          Height="30" Width="100" HorizontalAlignment="Left"/>
                             </DockPanel>
@@ -307,28 +305,26 @@
                             </ListBox>
                         </Grid>
 
-                        <!--End Time-->
+                        <!--Time Remaining and Update End Time-->
                         <StackPanel Grid.Row="2">
                             <TextBlock Text="Time Remaining"/>
-                            <StackPanel  HorizontalAlignment="Left">
-                                <TextBlock FontSize="20"  Margin="{StaticResource SmallIndent}" Foreground="Black" HorizontalAlignment="Center">
+                            <StackPanel  HorizontalAlignment="Center">
+                                <TextBlock FontSize="20" Foreground="Black" HorizontalAlignment="Center">
                                     <TextBlock.Text>
-                                        <MultiBinding StringFormat="{}{0} : {1} : {2}">
-                                            <Binding Path="Hour" FallbackValue="00"/>
-                                            <Binding Path="Minute" FallbackValue="00"/>
-                                            <Binding Path="Second" FallbackValue="00"/>
+                                        <MultiBinding StringFormat="{}{0:00} : {1:00} : {2:00}">
+                                            <Binding Path="SelectedClass.SelectedTest.TimeRemaining.Hours" FallbackValue="00"/>
+                                            <Binding Path="SelectedClass.SelectedTest.TimeRemaining.Minutes" FallbackValue="00"/>
+                                            <Binding Path="SelectedClass.SelectedTest.TimeRemaining.Seconds" FallbackValue="00"/>
                                         </MultiBinding>
                                     </TextBlock.Text>
                                 </TextBlock>
-                                <ToggleButton Name="ChangeTimeTgleBtn" Content="Change Finish Time" IsChecked="True" Style="{DynamicResource BlueTextToggleBtn}" Margin="{StaticResource SmallIndent}" HorizontalAlignment="Center"/>
+                                <ToggleButton Name="ChangeTimeTgleBtn" Content="Change Finish Time" IsChecked="True" Style="{DynamicResource BlueTextToggleBtn}" HorizontalAlignment="Center"/>
                             </StackPanel>
 
-
-
                             <StackPanel Margin="{StaticResource SmallIndent}" Visibility="{Binding ElementName=ChangeTimeTgleBtn, Path=IsChecked, Converter={StaticResource BoolToVis}}"
-                                    HorizontalAlignment="Left" DataContext="{Binding SelectedClass.SelectedTest}">
-                                <local:TimePicker Foreground="Black" HorizontalAlignment="Left" Margin="0,10,0,0"/>
-                                <Button Content="Update" Style="{DynamicResource BlueTextBtn}" HorizontalAlignment="Center"/>
+                                        DataContext="{Binding SelectedClass.SelectedTest}" HorizontalAlignment="Left">
+                                <local:TimePicker Foreground="Black" HorizontalAlignment="Left" Margin="0,10,0,0" Time="{Binding NewEndTime, Mode=TwoWay}" LimitTo24Hour="True"/>
+                                <Button Content="Update" Style="{DynamicResource BlueTextBtn}" HorizontalAlignment="Center" Command="{Binding UpdateTestEndTime}"/>
                             </StackPanel>
                         </StackPanel>
                     </Grid>

@@ -5,6 +5,7 @@
              xmlns:system="clr-namespace:System;assembly=mscorlib" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              mc:Ignorable="d" 
+            x:Name="TimePickerUC"
              x:Class="AceGrading.TimePicker">
     
     <!--Requires that the parent Framework Element must have the correct binding to the desired DateTime object-->
@@ -14,7 +15,7 @@
         <GridLength x:Key="SmallColWidth">20</GridLength>
         <system:Double x:Key="SizeFont">22</system:Double>
     </UserControl.Resources>
-    <Grid>
+    <Grid DataContext="{Binding ElementName=TimePickerUC}">
         <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="{StaticResource ColWidth}"/>
@@ -28,11 +29,9 @@
 
             <!--Hours-->
             <StackPanel Grid.Column="0" HorizontalAlignment="Center">
-                <RepeatButton Content="^" Style="{StaticResource BlueTextRepeatBtn}"  FontSize="{StaticResource SizeFont}"
-                          Command="{Binding IncrementHour}"/>
-                <TextBlock Text="{Binding EndTime, StringFormat={}{0:hh}, FallbackValue=0}" FontSize="{StaticResource SizeFont}"/>
-                <RepeatButton Content="^" Style="{StaticResource BlueTextRepeatBtn}" RenderTransformOrigin="0.5,0.5"  FontSize="{StaticResource SizeFont}"
-                          Command="{Binding DecrementHour}">
+                <RepeatButton Content="^" Style="{StaticResource BlueTextRepeatBtn}"  FontSize="{StaticResource SizeFont}" Click="UpHourClick"/>
+                <TextBlock Text="{Binding Time, StringFormat={}{0:hh}, FallbackValue=0}" FontSize="{StaticResource SizeFont}"/>
+                <RepeatButton Content="^" Style="{StaticResource BlueTextRepeatBtn}" RenderTransformOrigin="0.5,0.5"  FontSize="{StaticResource SizeFont}" Click="DownHourClick">
                     <RepeatButton.RenderTransform>
                         <RotateTransform Angle="180"/>
                     </RepeatButton.RenderTransform>
@@ -44,11 +43,9 @@
 
             <!--Minutes-->
             <StackPanel Grid.Column="2" HorizontalAlignment="Center">
-                <RepeatButton Content="^" Style="{StaticResource BlueTextRepeatBtn}"  FontSize="{StaticResource SizeFont}"
-                          Command="{Binding IncrementMinute}"/>
-                <TextBlock Text="{Binding EndTime, StringFormat={}{0:mm}, FallbackValue=0}" FontSize="{StaticResource SizeFont}"/>
-                <RepeatButton Content="^" Style="{StaticResource BlueTextRepeatBtn}" RenderTransformOrigin="0.5,0.5" FontSize="{StaticResource SizeFont}"
-                          Command="{Binding DecrementMinute}">
+                <RepeatButton Content="^" Style="{StaticResource BlueTextRepeatBtn}"  FontSize="{StaticResource SizeFont}" Click="UpMinuteClick"/>
+                <TextBlock Text="{Binding Time, StringFormat={}{0:mm}, FallbackValue=0}" FontSize="{StaticResource SizeFont}"/>
+                <RepeatButton Content="^" Style="{StaticResource BlueTextRepeatBtn}" RenderTransformOrigin="0.5,0.5" FontSize="{StaticResource SizeFont}" Click="DownMinuteClick">
                     <RepeatButton.RenderTransform>
                         <RotateTransform Angle="180"/>
                     </RepeatButton.RenderTransform>
@@ -57,11 +54,9 @@
 
             <!--AM or PM-->
             <StackPanel Grid.Column="4" HorizontalAlignment="Center">
-                <RepeatButton Content="^" Style="{StaticResource BlueTextRepeatBtn}"  FontSize="{StaticResource SizeFont}"
-                          Command="{Binding IncrementAMPM}"/>
-                <TextBlock Text="{Binding EndTime, StringFormat={}{0:tt}, FallbackValue='AM'}" FontSize="{StaticResource SizeFont}"/>
-                <RepeatButton Content="^" Style="{StaticResource BlueTextRepeatBtn}" RenderTransformOrigin="0.5,0.5" FontSize="{StaticResource SizeFont}"
-                          Command="{Binding DecrementAMPM}">
+                <RepeatButton Content="^" Style="{StaticResource BlueTextRepeatBtn}"  FontSize="{StaticResource SizeFont}" Click="UpAMPMClick"/>
+                <TextBlock Text="{Binding Time, StringFormat={}{0:tt}, FallbackValue='AM'}" FontSize="{StaticResource SizeFont}"/>
+                <RepeatButton Content="^" Style="{StaticResource BlueTextRepeatBtn}" RenderTransformOrigin="0.5,0.5" FontSize="{StaticResource SizeFont}" Click="DownAMPMClick">
                     <RepeatButton.RenderTransform>
                         <RotateTransform Angle="180"/>
                     </RepeatButton.RenderTransform>
@@ -70,8 +65,8 @@
             
             <!--Date-->
             <StackPanel Grid.Column="6" HorizontalAlignment="Center" VerticalAlignment="Center">
-                <TextBlock Text="{Binding EndTime, StringFormat={}{0:dd}, FallbackValue=10}" FontSize="{StaticResource SizeFont}" TextAlignment="Center"/>
-                <TextBlock Text="{Binding EndTime, StringFormat={}{0:MMMM}, FallbackValue='February'}"/>
+                <TextBlock Text="{Binding Time, StringFormat={}{0:dd}, FallbackValue=10}" FontSize="{StaticResource SizeFont}" TextAlignment="Center"/>
+                <TextBlock Text="{Binding Time, StringFormat={}{0:MMMM}, FallbackValue='February'}"/>
             </StackPanel>
         </Grid>
     </Grid>

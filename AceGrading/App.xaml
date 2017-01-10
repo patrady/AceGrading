@@ -24,6 +24,7 @@
         <SolidColorBrush x:Key="Green" Color="#FF00A242"/>
         <SolidColorBrush x:Key="OffWhite" Color="#FFE8E8E8"/>
         <SolidColorBrush x:Key="Aqua" Color="#FF56C2BC"/>
+        <SolidColorBrush x:Key="Yellow" Color="#FFFFE46D"/>
 
         <FontFamily x:Key="Font">CalibriLight</FontFamily>
 

@@ -9,13 +9,36 @@
     <UserControl.Resources>
         <local:BooleanToCollapseConverter x:Key="BoolToCollapse"/>
         <local:InverseBooleanToCollapseConverter x:Key="InverseBoolToCollapse"/>
+        <Style x:Key="GrayedOutPlaceholder" TargetType="Border">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding DataContext.SelectedClass.ClassLayout.HasDisjointStudents, 
+                                               RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ItemsControl}}" 
+                             Value="False">
+                    <DataTrigger.EnterActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetProperty="Opacity" To="0.3" Duration="0:0:1"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </DataTrigger.EnterActions>
+                    <DataTrigger.ExitActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:1"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </DataTrigger.ExitActions>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        
     </UserControl.Resources>
     <Grid>
         <Grid Name="ClassroomGrid">
             <TextBlock Text="Front" HorizontalAlignment="Center" VerticalAlignment="Top"/>
             <ScrollViewer Margin="0,15,0,0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
-                <ItemsControl>
-                    <ItemsControl.Items>
+                <ItemsControl  ItemsSource="{Binding SelectedClass.ClassLayout.Desks}">
+                    <!--<ItemsControl.Items>
                         <local:Student StudentName="Mary Margaret Herring" RowIndex="0" ColumnIndex="0" Status="Finished"/>
                         <local:Student StudentName="Student #2" RowIndex="0" ColumnIndex="1" Status="Offline"/>
                         <local:Student StudentName="Student #3" RowIndex="0" ColumnIndex="2" Status="Online"/>
@@ -27,11 +50,13 @@
                         <local:Student StudentName="Student #9" RowIndex="2" ColumnIndex="2" WifiUsage="AbstainingWifi"/>
                         <local:Student StudentName="Student #10" RowIndex="3" ColumnIndex="0" WifiUsage="UsingWifi"/>
                         <local:Student StudentName="Student #11" RowIndex="3" ColumnIndex="1" WifiUsage="UsingWifi"/>
-                    </ItemsControl.Items>
+                        <local:StudentPlaceholder RowIndex="4" ColumnIndex="1"/>
+                        <local:StudentPlaceholder RowIndex="4" ColumnIndex="0"/>
+                    </ItemsControl.Items>-->
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <Grid local:GridHelpers.ColumnCount="{Binding SelectedClass.SelectedTest.ClassLayout.NumColumns, FallbackValue=11}"
-                                  local:GridHelpers.RowCount="{Binding SelectedClass.SelectedTest.ClassLayout.NumRows, FallbackValue=11}">
+                            <Grid local:GridHelpers.ColumnCount="{Binding SelectedClass.ClassLayout.NumColumns, FallbackValue=11}"
+                                  local:GridHelpers.RowCount="{Binding SelectedClass.ClassLayout.NumRows, FallbackValue=11}">
                             </Grid>
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
@@ -41,7 +66,7 @@
                             <Setter Property="Grid.Column" Value="{Binding ColumnIndex}"/>
                         </Style>
                     </ItemsControl.ItemContainerStyle>
-                    <ItemsControl.ItemTemplate>
+                    <ItemsControl.Resources>
                         <DataTemplate DataType="{x:Type local:Student}">
                             <Border CornerRadius="5" Background="{DynamicResource LightGray}" Margin="2" VerticalAlignment="Center">
                                 <StackPanel Width="250">
@@ -56,7 +81,7 @@
                                                             <EasingDoubleKeyFrame KeyTime="0:0:0.4" Value="0"/>
                                                         </DoubleAnimationUsingKeyFrames>
                                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(FrameworkElement.MinHeight)" Storyboard.TargetName="DetailsGrid">
-                                                            <EasingDoubleKeyFrame KeyTime="0:0:0.4" Value="200"/>
+                                                            <EasingDoubleKeyFrame KeyTime="0:0:0.4" Value="210"/>
                                                         </DoubleAnimationUsingKeyFrames>
                                                     </Storyboard>
                                                 </BeginStoryboard>
@@ -79,14 +104,14 @@
                                     <StackPanel Name="NormalView_DockPnl" MaxHeight="40">
                                         <DockPanel HorizontalAlignment="Center" Height="40" VerticalAlignment="Bottom" Grid.Row="1">
                                             <!--Test Progress - Circle Progress Bar-->
-                                            <Viewbox>
+                                            <Viewbox Margin="5,0">
                                                 <ProgressBar Style="{StaticResource CircularProgressBar}" Width="1555" Height="1611" Margin="200" 
-                                         Value="{Binding TestProgress}" Background="{DynamicResource BrightBlue}" Foreground="{DynamicResource DarkGray}" 
-                                         local:ProgressBarSmoother.SmoothValue="{Binding TestProgress}"/>
+                                                             Value="{Binding TestProgress}" Background="{DynamicResource BrightBlue}" Foreground="{DynamicResource DarkGray}" 
+                                                             local:ProgressBarSmoother.SmoothValue="{Binding TestProgress}"/>
                                             </Viewbox>
 
                                             <!--Wifi Monitoring-->
-                                            <Image Name="Wifi_Image" Height="30">
+                                            <Image Name="Wifi_Image" Height="30" Margin="5,0" Visibility="{Binding DataContext.SelectedClass.SelectedTest.IsWifiDetectionEnabled, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ItemsControl}, Converter={StaticResource BoolToCollapse}}">
                                                 <Image.Style>
                                                     <Style TargetType="{x:Type Image}">
                                                         <Style.Triggers>
@@ -104,30 +129,27 @@
                                             </Image>
 
                                             <!--Cheating Monitoring-->
-                                            <Button ToolTip="Possible Cheating Detected" Height="30" Style="{DynamicResource ImageBtn}" Visibility="{Binding IsCheating, Converter={StaticResource BoolToCollapse}}">
+                                            <Button ToolTip="Possible Cheating Detected" Height="30" Margin="5,0" Style="{DynamicResource ImageBtn}" Visibility="{Binding IsCheating, Converter={StaticResource BoolToCollapse}}">
                                                 <Button.Content>
                                                     <Image Source="pack://application:,,,/Icons/cheating_alert.png" Height="30"/>
                                                 </Button.Content>
                                             </Button>
 
                                             <!--Test Status - Offline, Online, Finished-->
-                                            <Ellipse Name="TestStatus_Ellipse" Height="30" Width="30" StrokeThickness="2">
+                                            <Ellipse Name="TestStatus_Ellipse" Height="30" Width="30" Margin="5,0" Stroke="Transparent">
                                                 <Ellipse.Style>
                                                     <Style TargetType="{x:Type Ellipse}">
                                                         <Style.Triggers>
                                                             <DataTrigger Binding="{Binding Status}" Value="{x:Static local:Online_Status.Online}">
-                                                                <Setter Property="Fill" Value="{DynamicResource Green}"/>
-                                                                <Setter Property="Stroke" Value="Transparent"/>
+                                                                <Setter Property="Fill" Value="{DynamicResource Yellow}"/>
                                                                 <Setter Property="ToolTip" Value="Online"/>
                                                             </DataTrigger>
                                                             <DataTrigger Binding="{Binding Status}"  Value="{x:Static local:Online_Status.Offline}">
                                                                 <Setter Property="Fill" Value="{DynamicResource Red}"/>
-                                                                <Setter Property="Stroke" Value="Transparent"/>
                                                                 <Setter Property="ToolTip" Value="Offline"/>
                                                             </DataTrigger>
                                                             <DataTrigger Binding="{Binding Status}" Value="{x:Static local:Online_Status.Finished}">
-                                                                <Setter Property="Stroke" Value="{DynamicResource Green}"/>
-                                                                <Setter Property="Fill" Value="Transparent"/>
+                                                                <Setter Property="Fill" Value="{DynamicResource Green}"/>
                                                                 <Setter Property="ToolTip" Value="Finished"/>
                                                             </DataTrigger>
                                                         </Style.Triggers>
@@ -138,7 +160,7 @@
                                     </StackPanel>
 
 
-                                    <StackPanel Name="DetailsGrid"  Height="0">
+                                    <StackPanel Name="DetailsGrid" Height="0">
                                         <Grid>
                                             <!--The height of these row definitions are determined by the storyboard value in the togglebutton above-->
                                             <Grid.RowDefinitions>
@@ -147,6 +169,7 @@
                                                 <RowDefinition/>
                                                 <RowDefinition/>
                                                 <RowDefinition/>
+                                                <RowDefinition Height="10"/>
                                             </Grid.RowDefinitions>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="40"/>
@@ -156,8 +179,8 @@
                                             <!--Test Progress-->
                                             <Viewbox Grid.Row="0" HorizontalAlignment="Right">
                                                 <ProgressBar Style="{StaticResource CircularProgressBar}" Width="1555" Height="1611" Margin="200" 
-                                         Value="{Binding TestProgress}" Background="{DynamicResource BrightBlue}" Foreground="{DynamicResource DarkGray}" 
-                                         local:ProgressBarSmoother.SmoothValue="{Binding TestProgress}"/>
+                                                             Value="{Binding TestProgress}" Background="{DynamicResource BrightBlue}" Foreground="{DynamicResource DarkGray}" 
+                                                             local:ProgressBarSmoother.SmoothValue="{Binding TestProgress}"/>
                                             </Viewbox>
                                             <TextBlock Grid.Row="0" Grid.Column="1" TextWrapping="Wrap" TextAlignment="Left" VerticalAlignment="Center" Margin="5,0" Foreground="Black">
                                                 <TextBlock.Text>
@@ -169,8 +192,10 @@
                                             </TextBlock>
 
                                             <!--Wifi Monitoring-->
-                                            <Image Source="{Binding ElementName=Wifi_Image, Path=Source}" Grid.Row="1" HorizontalAlignment="Right" Margin="0,1"/>
-                                            <TextBlock TextWrapping="Wrap" TextAlignment="Left" Grid.Row="1" Grid.Column="1" VerticalAlignment="Center"  Margin="5,0" Foreground="Black">
+                                            <Image Source="{Binding ElementName=Wifi_Image, Path=Source}" Grid.Row="1" HorizontalAlignment="Right" Margin="0,1"
+                                                   Visibility="{Binding DataContext.SelectedClass.SelectedTest.IsWifiDetectionEnabled, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ItemsControl}, Converter={StaticResource BoolToVis}}"/>
+                                            <TextBlock TextWrapping="Wrap" TextAlignment="Left" Grid.Row="1" Grid.Column="1" VerticalAlignment="Center"  Margin="5,0" Foreground="Black"
+                                                       Visibility="{Binding DataContext.SelectedClass.SelectedTest.IsWifiDetectionEnabled, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ItemsControl}, Converter={StaticResource BoolToVis}}">
                                                 <TextBlock.Style>
                                                     <Style TargetType="{x:Type TextBlock}">
                                                         <Style.Triggers>
@@ -184,6 +209,10 @@
                                                     </Style>
                                                 </TextBlock.Style>
                                             </TextBlock>
+                                            <Image Source="/Icons/wifi_disconnected.png" Grid.Row="1" HorizontalAlignment="Right" Margin="0,1" 
+                                                   Visibility="{Binding DataContext.SelectedClass.SelectedTest.IsWifiDetectionEnabled, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ItemsControl}, Converter={StaticResource InvserseBoolToVis}}"/>
+                                            <TextBlock Text="Internet usage is not being monitored." Grid.Row="1" Grid.Column="1" TextWrapping="Wrap" Foreground="Black" Margin="5,0"
+                                                       Visibility="{Binding DataContext.SelectedClass.SelectedTest.IsWifiDetectionEnabled, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ItemsControl}, Converter={StaticResource InvserseBoolToVis}}"/>
 
                                             <!--Test Status-->
                                             <Ellipse Fill="{Binding ElementName=TestStatus_Ellipse, Path=Fill}" Stroke="{Binding ElementName=TestStatus_Ellipse, Path=Stroke}"
@@ -220,7 +249,23 @@
                                 </StackPanel>
                             </Border>
                         </DataTemplate>
-                    </ItemsControl.ItemTemplate>
+                        
+                        <DataTemplate DataType="{x:Type local:StudentPlaceholder}">
+                            <Border CornerRadius="5" Background="{DynamicResource Gray}" Margin="2" VerticalAlignment="Center"
+                                    Style="{StaticResource GrayedOutPlaceholder}" Height="90"  Width="250">
+                                <StackPanel Width="250" Height="90" Visibility="{Binding DataContext.SelectedClass.ClassLayout.HasDisjointStudents, 
+                                               RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ItemsControl}, Converter={StaticResource BoolToVis}}">
+                                    <TextBlock Text="Select Student" HorizontalAlignment="Center" Foreground="Black" FontSize="20"/>
+                                    <ComboBox HorizontalAlignment="Center" Width="200" Margin="0,10,0,0" 
+                                              ItemsSource="{Binding DisjointStudents}" 
+                                              DisplayMemberPath="StudentName"
+                                              SelectedItem="{Binding SelectedDisjointStudent}"/>
+                                    <Button Content="Continue" Style="{DynamicResource BlueTextBtn}" HorizontalAlignment="Center" Margin="0,10,0,0"
+                                            Command="{Binding AddStudent}"/>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.Resources>
                 </ItemsControl>
             </ScrollViewer>
         </Grid>
