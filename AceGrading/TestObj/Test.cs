@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
@@ -14,6 +15,7 @@ namespace AceGrading
         {
             Answers = new ObservableCollection<Question>();
             Sections = new ObservableCollection<Section>() { new Section(this) { Section_Number = 0 } };
+            WifiUsers = new ObservableCollection<Student>();
             TestInitials = new Initials();
             SelectedSection = new Section(this);
             OpenFile = new OpenFile_Command(this);
@@ -27,10 +29,13 @@ namespace AceGrading
             DeleteSection = new DeleteTestSection_Command(this);
             UpdateTestEndTime = new UpdateTestEndTime_Command(this);
             StartTest = new StartTest_Command(this);
+            LayoutPresets = new QuestionLayoutPresets_ContainerUI();
             Statistics = new Test_Statistics();
             TestName = "Test Name";
+            TestStatus = Test_Status.CollectingData;
             Upload_File = null;
             Individual_Values = false;
+            HasWifiUsers = false;
             HasSections = false;
             Point_Worth = 0;
             Is_Graded = false;
@@ -38,8 +43,6 @@ namespace AceGrading
             Has_Student_Answers = false;
             Upload_File_Name = null;
             Server_ID = null;
-            IsPaused = false;
-            ClassLayout = new ClassStructure();
             EndTime = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, DateTime.Now.Hour, DateTime.Now.Minute, 0);
             NewEndTime = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, DateTime.Now.Hour, DateTime.Now.Minute, 0);
         }
@@ -57,7 +60,20 @@ namespace AceGrading
             }
         }
         public ObservableCollection<Question> Answers { get; set; }
-        public ClassStructure ClassLayout { get; set; }
+        public ObservableCollection<Student> WifiUsers { get; set; }
+        public Class ParentClass { get; set; }
+        public Test_Status TestStatus
+        {
+            get { return _TestStatus; }
+            set
+            {
+                if (value != _TestStatus)
+                {
+                    _TestStatus = value;
+                    OnPropertyChanged("TestStatus");
+                }
+            }
+        }
         public string Initials { get { return _Initials; } }
         public double Point_Worth
         {
@@ -68,7 +84,10 @@ namespace AceGrading
                 {
                     _PointWorth = value;
                     OnPropertyChanged("Point_Worth");
-                    UpdatePointsRemaining();
+
+                    if (Individual_Values)
+                        UpdatePointsRemaining();
+                    else UpdatePointsPerQuestion();
                 }
             }
         }
@@ -133,30 +152,23 @@ namespace AceGrading
                 {
                     _IndividualPoints = value;
                     OnPropertyChanged("Individual_Values");
+
+                    //Update the calculation based off of this boolean
+                    if (_IndividualPoints)
+                        this.UpdatePointsRemaining();
+                    else this.UpdatePointsPerQuestion();
                 }
             }
         }
-        public bool IsPaused
+        public bool HasWifiUsers
         {
-            get { return _IsPaused; }
+            get { return _HasWifiUsers; }
             set
             {
-                if (value != _IsPaused)
+                if (value != _HasWifiUsers)
                 {
-                    _IsPaused = value;
-                    OnPropertyChanged("IsPaused");
-                }
-            }
-        }
-        public bool IsTestStarted
-        {
-            get { return _IsTestStarted; }
-            set
-            {
-                if (value != _IsTestStarted)
-                {
-                    _IsTestStarted = value;
-                    OnPropertyChanged("IsTestStarted");
+                    _HasWifiUsers = value;
+                    OnPropertyChanged("HasWifiUsers");
                 }
             }
         }
@@ -181,6 +193,18 @@ namespace AceGrading
                 {
                     _HasSections = value;
                     OnPropertyChanged("HasSections");
+                }
+            }
+        }
+        public double PointsPerQuestion
+        {
+            get { return Math.Round(_PointsPerQuestion, 2); }
+            set
+            {
+                if (value != _PointsPerQuestion)
+                {
+                    _PointsPerQuestion = value;
+                    OnPropertyChanged("PointsPerQuestion");
                 }
             }
         }
@@ -259,6 +283,7 @@ namespace AceGrading
                 }
             }
         }
+        public QuestionLayoutPresets_ContainerUI LayoutPresets { get; set; }
 
         //Public Methods
         public void AddQuestion(Question newQuestion)
@@ -267,6 +292,7 @@ namespace AceGrading
             newQuestion.SetParentTest(this);
             newQuestion.TestSection = this.RequiredSection;
             this.Answers.Add(newQuestion);
+            this.UpdatePointsPerQuestion();
         }
         public void AddQuestion(Question newQuestion, int Index)
         {
@@ -274,6 +300,7 @@ namespace AceGrading
             newQuestion.SetParentTest(this);
             newQuestion.TestSection = this.RequiredSection;
             this.Answers.Insert(Index, newQuestion);
+            this.UpdatePointsPerQuestion();
         }
         public void AddTestSection(Section newSection)
         {
@@ -284,8 +311,8 @@ namespace AceGrading
         public void DeleteTestSection(Section deleteSection)
         {
             //Set all of the questions that were under this section to the Required Section
-            for (int i = 0; i < deleteSection.Questions.Count; i++)
-                this.Answers[deleteSection.Questions[i].Number - 1].TestSection = this.RequiredSection;
+            for (int i = 0; i < deleteSection.Questions.Count;)
+                deleteSection.Questions[i].TestSection = this.RequiredSection;
 
             //Delete the section and update if it has any other sections than the required
             this.Sections.Remove(deleteSection);
@@ -302,17 +329,11 @@ namespace AceGrading
         {
             //Remove the question from the previous section
             if (prevSection != null)
-                prevSection.Questions.Remove(question);
+                prevSection.RemoveQuestion(question);
 
             //Add the question to the new section
             if (postSection != null)
-                postSection.Questions.Add(question);
-
-            //If the section involves the 'required section', update the number of required questions
-            if (prevSection == this.RequiredSection)
-                prevSection.DecrementRequiredQuestions();
-            else if (postSection == this.RequiredSection)
-                postSection.IncrementRequiredQuestions();
+                postSection.AddQuestion(question);
         }
         /// <summary>
         /// Increment all question numbers by one starting at a specific index.
@@ -330,8 +351,32 @@ namespace AceGrading
         {
             //Recalculate the Points Remaining
             this.PointsRemaining = this.Point_Worth;
-            foreach (Question question in this.Answers)
-                this.PointsRemaining -= question.Point_Value;
+            if (!this.HasSections)
+            {
+                foreach (Question question in this.Answers)
+                    this.PointsRemaining -= question.Point_Value;
+            }
+            else
+            {
+                //Since this test has sections, take the highest question point values and add those up 
+                List<Question> TempQuestions;
+                double sectionScore = 0;
+                double runningScore = 0;
+                foreach (Section section in this.Sections)
+                {
+                    //Copy the section questions to a new list and sort them by point value worth
+                    TempQuestions = new List<Question>(section.Questions);
+                    TempQuestions.Sort((x, y) => x.Point_Value.CompareTo(y.Point_Value));
+
+                    //Take the top 'n' number of point values and sum them where 'n' = section's # of required questions
+                    for (int i = section.Total_Questions - section.Required_Questions; i < section.Total_Questions; i++)
+                        sectionScore += TempQuestions[i].Point_Value;
+                    runningScore += sectionScore;
+                    sectionScore = 0;
+                }
+                this.PointsRemaining -= runningScore;   
+            }
+            
         }
         /// <summary>
         /// Updates the points remaining to be used in the test when a specific question's point value is changed.
@@ -340,20 +385,27 @@ namespace AceGrading
         /// <param name="NewPointWorth">New Point Value.</param>
         public void UpdatePointsRemaining(double PreviousPointWorth, double NewPointWorth)
         {
-            this.PointsRemaining += (PreviousPointWorth - NewPointWorth);
+            if (!this.HasSections)
+                this.PointsRemaining += (PreviousPointWorth - NewPointWorth);
+            else
+                UpdatePointsRemaining();
         }
         public void StartTimeCountdown()
         {
-            this.IsTestStarted = true;
+            this.TestStatus = Test_Status.Started;
             this.TimeRemaining = this.EndTime.Subtract(DateTime.Now);
             TimeCountdown = new DispatcherTimer(new TimeSpan(0, 0, 1), DispatcherPriority.Normal, 
                                                 delegate
                                                 {
-                                                    if (TimeRemaining <= TimeSpan.Zero)
+                                                    if (TimeRemaining <= TimeSpan.Zero.Add(TimeSpan.FromSeconds(1)))
                                                     {
                                                         this.StopTimeCountdown();
                                                     }
                                                     TimeRemaining = TimeRemaining.Add(TimeSpan.FromSeconds(-1));
+
+                                                    //When debugging, simulate some student data
+                                                    if (TimeRemaining.Seconds % 5 == 0)
+                                                        this.DebugMode();
                                                 }, Application.Current.Dispatcher);
 
             TimeCountdown.Start();
@@ -364,9 +416,26 @@ namespace AceGrading
                 if (TimeCountdown.IsEnabled)
                 {
                     TimeCountdown.Stop();
-                    this.IsTestStarted = false;
-                }
-                    
+                    this.TestStatus = Test_Status.CollectingData;
+                    this.TimeRemaining = TimeSpan.Zero;
+                }       
+        }
+        /// <summary>
+        /// Update the Points Per Question attribute.
+        /// </summary>
+        public void UpdatePointsPerQuestion()
+        {
+            int numRequiredQuestions = 0;
+
+            //Take each test section and total up the numer of required question
+            foreach (Section section in this.Sections)
+                numRequiredQuestions += section.Required_Questions;
+
+            //Do not divide by zero
+            if (numRequiredQuestions == 0)
+                this.PointsPerQuestion = 0;
+            else
+                this.PointsPerQuestion = this.Point_Worth / numRequiredQuestions;
         }
         public void UpdateEndTime(DateTime newEndTime)
         {
@@ -394,15 +463,67 @@ namespace AceGrading
         public StartTest_Command StartTest { get; set; }
 
         //Private Methods
-        private void CheckDecrementTime()
+        private void DebugMode()
         {
-            if (this.EndTime < DateTime.Now)
-                this.EndTime = this.EndTime.AddHours(24);
+            Random rand = new Random();
+            foreach (Student student in this.ParentClass.Students)
+            {
+                if (student.Status == Online_Status.Finished)
+                    continue;
+
+                //Update the student Progress
+                student.TestProgress += rand.Next(0, 10);
+                if (student.TestProgress > this.Point_Worth)
+                {
+                    student.TestProgress = this.Point_Worth;
+                    student.Status = Online_Status.Finished;
+                }
+                    
+                //Update the Online Status
+                if (student.TestProgress == 0)
+                    student.Status = Online_Status.Offline;
+                else if (student.TestProgress > 0 && student.TestProgress < this.Point_Worth)
+                    student.Status = Online_Status.Online;
+                else
+                    student.Status = Online_Status.Finished;
+
+                //Simulate a random disconnection
+                if (rand.Next(0, 5) == 4)
+                    student.Status = Online_Status.Offline;
+
+                //Update the student wifi
+                switch (rand.Next(1, 3))
+                {
+                    case 1: student.WifiUsage = Wifi_Status.AbstainingWifi; break;
+                    case 2: student.WifiUsage = Wifi_Status.UsingWifi; break;
+                    default: student.WifiUsage = Wifi_Status.AbstainingWifi; break;
+                }
+            }
+
+            //Check the wifi usage of all students
+            CheckIfStudentsUsingWifi();
         }
-        private void CheckIncrementTime()
+        private void CheckIfStudentsUsingWifi()
         {
-            if (this.EndTime > DateTime.Now.AddHours(24))
-                this.EndTime = this.EndTime.AddHours(-24);
+            foreach (Student student in this.ParentClass.Students)
+            {
+                if (student.WifiDetected)
+                {
+                    if (!this.WifiUsers.Contains(student))
+                        this.WifiUsers.Add(student);
+                }   
+                else
+                {
+                    if (this.WifiUsers.Contains(student))
+                        this.WifiUsers.Remove(student);
+                }
+            }
+
+            //Update the boolean that indicates if there are users using the internet
+            if (this.WifiUsers.Count > 0)
+                this.HasWifiUsers = true;
+            else
+                this.HasWifiUsers = false;
         }
 
         //INotifyPropertyChanged
@@ -414,8 +535,9 @@ namespace AceGrading
 
         //Private Variables
         private string _Initials, _Test_Name, _UploadFileName;
-        private bool _IndividualPoints, _HasSections, _IsPaused, _IsWifiDetectionEnabled, _IsTestStarted;
-        private double _PointsRemaining, _PointWorth;
+        private bool _IndividualPoints, _HasSections, _IsWifiDetectionEnabled, _HasWifiUsers;
+        private double _PointsRemaining, _PointWorth, _PointsPerQuestion;
+        private Test_Status _TestStatus;
         private Initials TestInitials;
         private Test_Statistics _TestStats;
         private DateTime _EndTime, _NewEndTime;
@@ -433,13 +555,13 @@ namespace AceGrading
         public void Execute(object parameter)
         {
             //If a question is to be added to the end of the list of answers, then just add it normally
-            if (test.SelectedQuestion == null || test.SelectedQuestion.Number == test.Answers.Count)
+            if (test.SelectedQuestion == null)
                 this.test.AddQuestion(new MultipleChoice(test));
             //Else add the question at a specific index that is one after the selected question
             else
             {
-                this.test.AddQuestion(new MultipleChoice(test), test.SelectedQuestion.Number);
-                this.test.IncrementQuestionNumbers(test.SelectedQuestion.Number + 1);
+                this.test.AddQuestion(new MultipleChoice(test), test.SelectedQuestion.Number - 1);
+                this.test.IncrementQuestionNumbers(test.SelectedQuestion.Number);
             }
         }
     }
@@ -454,13 +576,13 @@ namespace AceGrading
         public void Execute(object parameter)
         {
             //If a question is to be added to the end of the list of answers, then just add it normally
-            if (test.SelectedQuestion == null || test.SelectedQuestion.Number == test.Answers.Count)
+            if (test.SelectedQuestion == null)
                 this.test.AddQuestion(new Matching(test));
             //Else add the question at a specific index that is one after the selected question
             else
             {
-                this.test.AddQuestion(new Matching(test), test.SelectedQuestion.Number);
-                this.test.IncrementQuestionNumbers(test.SelectedQuestion.Number + 1);
+                this.test.AddQuestion(new Matching(test), test.SelectedQuestion.Number - 1);
+                this.test.IncrementQuestionNumbers(test.SelectedQuestion.Number);
             }
         }
     }
@@ -475,13 +597,13 @@ namespace AceGrading
         public void Execute(object parameter)
         {
             //If a question is to be added to the end of the list of answers, then just add it normally
-            if (test.SelectedQuestion == null || test.SelectedQuestion.Number == test.Answers.Count)
+            if (test.SelectedQuestion == null)
                 this.test.AddQuestion(new TrueFalse(test));
             //Else add the question at a specific index that is one after the selected question
             else
             {
-                this.test.AddQuestion(new TrueFalse(test), test.SelectedQuestion.Number);
-                this.test.IncrementQuestionNumbers(test.SelectedQuestion.Number + 1);
+                this.test.AddQuestion(new TrueFalse(test), test.SelectedQuestion.Number - 1);
+                this.test.IncrementQuestionNumbers(test.SelectedQuestion.Number);
             }
         }
     }
@@ -496,13 +618,13 @@ namespace AceGrading
         public void Execute(object parameter)
         {
             //If a question is to be added to the end of the list of answers, then just add it normally
-            if (test.SelectedQuestion == null || test.SelectedQuestion.Number == test.Answers.Count)
+            if (test.SelectedQuestion == null)
                 this.test.AddQuestion(new Essay(test));
             //Else add the question at a specific index that is one after the selected question
             else
             {
-                this.test.AddQuestion(new Essay(test), test.SelectedQuestion.Number);
-                this.test.IncrementQuestionNumbers(test.SelectedQuestion.Number + 1);
+                this.test.AddQuestion(new Essay(test), test.SelectedQuestion.Number - 1);
+                this.test.IncrementQuestionNumbers(test.SelectedQuestion.Number);
             }
         }
     }
@@ -517,13 +639,13 @@ namespace AceGrading
         public void Execute(object parameter)
         {
             //If a question is to be added to the end of the list of answers, then just add it normally
-            if (test.SelectedQuestion == null || test.SelectedQuestion.Number == test.Answers.Count)
+            if (test.SelectedQuestion == null)
                 this.test.AddQuestion(new ShortAnswer(test));
             //Else add the question at a specific index that is one after the selected question
             else
             {
-                this.test.AddQuestion(new ShortAnswer(test), test.SelectedQuestion.Number);
-                this.test.IncrementQuestionNumbers(test.SelectedQuestion.Number + 1);
+                this.test.AddQuestion(new ShortAnswer(test), test.SelectedQuestion.Number - 1);
+                this.test.IncrementQuestionNumbers(test.SelectedQuestion.Number);
             }
         }
     }
@@ -578,7 +700,7 @@ namespace AceGrading
         {
             //Update the time only if the new end time is greater than the previous end time
             if (this.test.NewEndTime != null)
-                if (this.test.NewEndTime > this.test.EndTime)
+                if (this.test.NewEndTime > DateTime.Now)
                     this.test.UpdateEndTime(this.test.NewEndTime);
         }
     }
@@ -595,6 +717,139 @@ namespace AceGrading
         {
             this.test.NewEndTime = this.test.EndTime;
             this.test.StartTimeCountdown();
+        }
+    }
+
+    public class QuestionLayoutPresets_ContainerUI : INotifyPropertyChanged
+    {
+        public QuestionLayoutPresets_ContainerUI()
+        {
+            MultChoicePresets = new ObservableCollection<QuestionLayoutPreset_UI>()
+            {
+                new QuestionLayoutPreset_UI() { Letters = new List<char> {'A', 'B', 'C' } },
+                new QuestionLayoutPreset_UI() { Letters = new List<char> {'A', 'B', 'C', 'D' } },
+                new QuestionLayoutPreset_UI() { Letters = new List<char> {'A', 'B', 'C', 'D', 'E' } },
+                new QuestionLayoutPreset_UI() { Letters = new List<char> {'I', 'J', 'K' } },
+                new QuestionLayoutPreset_UI() { Letters = new List<char> {'I', 'J', 'K', 'L' } },
+                new QuestionLayoutPreset_UI() { Letters = new List<char> {'I', 'J', 'K', 'L', 'M' } },
+            };
+        }
+
+        //Public Attributes
+        public ObservableCollection<QuestionLayoutPreset_UI> MultChoicePresets { get; set; }
+        public QuestionLayoutPreset_UI SelectedPreset
+        {
+            get { return _SelectedPreset; }
+            set
+            {
+                if (value != _SelectedPreset)
+                {
+                    _SelectedPreset = value;
+                    OnPropertyChanged("SelectedPreset");
+                }
+            }
+        }
+
+        //Public Methods
+        public void AddOrUpdatePreset(MultipleChoice MultChoice)
+        {
+            int index;
+            if ((index = CheckIfPresentExists(MultChoice)) == -1)
+            {
+                //Add the new preset to the list
+                List<char> tempLetters = new List<char>();
+                for (int i = 0; i < MultChoice.NumberOptions; i++)
+                    tempLetters.Add(MultChoice.OptionalAnswers[i].Letter);
+                this.LocalMultChoicePresets.Add(new QuestionLayoutPreset_UI() { Letters = tempLetters });
+
+                //Reorganize the Presets
+                OrganizePresets(this.LocalMultChoicePresets);
+            }
+            else
+            {
+                //Increment the number of times this preset has been used
+                this.LocalMultChoicePresets[index].IncrementNumUses();
+            }
+        }
+        public void RemovePreset(MultipleChoice MultChoice)
+        {
+            int index;
+            if ((index = CheckIfPresentExists(MultChoice)) > -1)
+            {
+                //Decrement and Reorganize the Presets
+                this.LocalMultChoicePresets[index].DecrementNumUses();
+                this.OrganizePresets(this.LocalMultChoicePresets);
+            }
+        }
+
+        //Private Methods
+        private void OrganizePresets(ObservableCollection<QuestionLayoutPreset_UI> Preset)
+        {
+            Preset = new ObservableCollection<QuestionLayoutPreset_UI>(Preset.OrderByDescending(x => x.NumberOfUses));
+        }
+        private void UpdateDisplayedMultChoicePresets()
+        {
+            //Display Up to set number of presets, so if less presets exist then show all
+            if (this.LocalMultChoicePresets.Count <= maxDisplayed)
+                this.MultChoicePresets = this.LocalMultChoicePresets;
+            else
+            {
+                //Since there are more than the set number of presets, only had up to that predefined number
+                this.MultChoicePresets.Clear();
+                for (int i = 0; i < maxDisplayed; i++)
+                    this.MultChoicePresets.Add(this.LocalMultChoicePresets[i]);
+            }
+        }
+        private int CheckIfPresentExists(MultipleChoice MultChoiceQuestion)
+        {            
+            for (int i = 0; i < this.LocalMultChoicePresets.Count; i++)
+            {
+                //Check if they have the same number of letters
+                if (this.LocalMultChoicePresets[i].NumberOfLetters == MultChoiceQuestion.NumberOptions)
+                {
+                    //Check if they have the first starting letter, if they do then they are identical
+                    if (this.LocalMultChoicePresets[i].Letters[0] == MultChoiceQuestion.OptionalAnswers[0].Letter)
+                        return i;
+                }
+            }
+            return -1;
+        }
+
+        //Private Variables
+        private QuestionLayoutPreset_UI _SelectedPreset;
+        private ObservableCollection<QuestionLayoutPreset_UI> LocalMultChoicePresets { get; set; }
+        static int maxDisplayed = 10;
+
+        //INotifyPropertyChanged
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected virtual void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+    }
+
+    public class QuestionLayoutPreset_UI
+    {
+        public QuestionLayoutPreset_UI()
+        {
+            this.Letters = new List<char>();
+            this.NumberOfUses = 0;
+        }
+
+        //Public Attributes
+        public List<char> Letters { get; set; }
+        public int NumberOfUses { get; set; }
+        public int NumberOfLetters { get { return this.Letters.Count; } }
+
+        //Public Methods
+        public void IncrementNumUses()
+        {
+            this.NumberOfUses++;
+        }
+        public void DecrementNumUses()
+        {
+            if (this.NumberOfUses > 0)
+                this.NumberOfUses--;
         }
     }
 }

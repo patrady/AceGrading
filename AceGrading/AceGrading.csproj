@@ -59,6 +59,7 @@
     <Compile Include="ClassroomLayout.xaml.cs">
       <DependentUpon>ClassroomLayout.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Enumerations\Enums.cs" />
     <Compile Include="NewPlaceHolder.xaml.cs">
       <DependentUpon>NewPlaceHolder.xaml</DependentUpon>
     </Compile>
@@ -69,7 +70,6 @@
     <Compile Include="Question\Matching.cs" />
     <Compile Include="Question\MultipleChoice.cs" />
     <Compile Include="Question\Question.cs" />
-    <Compile Include="Question\QuestionInterface.cs" />
     <Compile Include="Question\ShortAnswer.cs" />
     <Compile Include="Question\TrueFalse.cs" />
     <Compile Include="RosterManagement.xaml.cs">

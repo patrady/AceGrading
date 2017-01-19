@@ -19,8 +19,8 @@ namespace AceGrading
             class1.Add_Student(new Student() { StudentName = "Kristen Duke" });
             class1.Add_Student(new Student() { StudentName = "Joe Cloud" });
             class1.Add_Student(new Student() { StudentName = "Nick Nocholi" });
-            class1.Add_Test(new Test() { TestName = "Test #1", Upload_File_Name = @"C:\Users\rober\Desktop\pingpong.png", Point_Worth = 100, Statistics = new Test_Statistics(), Is_Graded = true, HighestScore = 99 });
-            class1.Add_Test(new Test() { TestName = "Test #2", Upload_File_Name = @"C:\Users\rober\Desktop\Doc1.docx", Point_Worth = 200, Statistics = new Test_Statistics(), Is_Graded = true, HighestScore = 98 });
+            class1.Add_Test(new Test() { TestName = "Test #1", Upload_File_Name = @"C:\Users\rober\Desktop\pingpong.png", Point_Worth = 100, Statistics = new Test_Statistics(), Is_Graded = true, HighestScore = 99, ParentClass = class1 });
+            class1.Add_Test(new Test() { TestName = "Test #2", Upload_File_Name = @"C:\Users\rober\Desktop\Doc1.docx", Point_Worth = 200, Statistics = new Test_Statistics(), Is_Graded = true, HighestScore = 98, ParentClass = class1 });
 
             Class class2 = new Class();
             class2.Class_Name = "History / Geography";
@@ -29,8 +29,8 @@ namespace AceGrading
             class2.Add_Student(new Student() { StudentName = "Laura Cook"});
             class2.Add_Student(new Student() { StudentName = "PJ Biyani"});
             class2.Add_Student(new Student() { StudentName = "Kartik Gupta"});
-            class2.Add_Test(new Test() { TestName = "Test #3", Statistics = new Test_Statistics(), Is_Graded = true, HighestScore = 97 });
-            class2.Add_Test(new Test() { TestName = "Test #4", Statistics = new Test_Statistics(), Is_Graded = true, HighestScore = 96 });
+            class2.Add_Test(new Test() { TestName = "Test #3", Statistics = new Test_Statistics(), Is_Graded = true, HighestScore = 97, ParentClass = class2 });
+            class2.Add_Test(new Test() { TestName = "Test #4", Statistics = new Test_Statistics(), Is_Graded = true, HighestScore = 96, ParentClass = class2 });
 
             this.Add_Class(class1);
             this.Add_Class(class2);
@@ -39,6 +39,7 @@ namespace AceGrading
             this.PreAddClass = new PreAddClass_Command(this);
             NewClass = new Class();
             SelectedClass = this.Classes.ElementAt(0);
+            SelectedClass.SelectedTest = SelectedClass.Tests.ElementAt(0);
         }
 
         //Attributes
@@ -179,6 +180,11 @@ namespace AceGrading
                 if (value != _WifiUsage)
                 {
                     _WifiUsage = value;
+
+                    //Update the WifiDetected Boolean
+                    if (_WifiUsage == Wifi_Status.UsingWifi)
+                        this.WifiDetected = true;
+
                     OnPropertyChanged("WifiUsage");
                 }
             }
@@ -204,7 +210,7 @@ namespace AceGrading
                 {
                     _Name = value;
                     _Initials = StudentInitials.MakeInitials(_Name);
-                    OnPropertyChanged("Name");
+                    OnPropertyChanged("StudentName");
                     OnPropertyChanged("Initials");
                 }
             }
@@ -339,10 +345,6 @@ namespace AceGrading
         private Cheating_Role _CheatingRole;
     }
 
-    public enum Online_Status { Offline, Online, Finished };
-    public enum Wifi_Status { UsingWifi, AbstainingWifi, NotMonitored };
-    public enum Cheating_Role { Perpetrator, Victim, Uncertain };
-
     public class ReturnValidation
     {
         /// <summary>
@@ -408,10 +410,19 @@ namespace AceGrading
             this.AddTest = new AddTest_Command(this);
             this.DeleteTest = new DeleteTest_Command(this);
             this.ClassLayout = new ClassStructure(this);
+            this.SelectedStudentNotNull = new SelectedStudentNotNull_Command(this);
         }
 
         //Variables
-        public ObservableCollection<Student> Students { get; set; }
+        public ObservableCollection<Student> Students
+        {
+            get { return _Students; }
+            set
+            {
+                _Students = value;
+                OnPropertyChanged("Students");
+            }
+        }
         public ObservableCollection<Test> Tests { get; set; }
         public string Class_Name
         {
@@ -477,6 +488,11 @@ namespace AceGrading
 
             //Add the student since no other student has the name
             this.Students.Add(new Student() { StudentName = student.StudentName });
+
+            //Create a list from the observable collection of students so it can be sorted alphabetically
+            List<Student> LocalStudents = new List<Student>(this.Students);
+            LocalStudents.Sort((student1, student2) => string.Compare(student1.StudentName.Split(' ')[student1.StudentName.Split(' ').Length - 1], student2.StudentName.Split(' ')[student2.StudentName.Split(' ').Length - 1]));
+            this.Students = new ObservableCollection<Student>(LocalStudents);
 
             //Update other lists that reference this list
             this.ClassLayout.RefreshDisjointStudents();
@@ -572,11 +588,13 @@ namespace AceGrading
         public PreAddTest_Command PreAddTest { get; set; }
         public AddTest_Command AddTest { get; set; }
         public DeleteTest_Command DeleteTest { get; set; }
+        public SelectedStudentNotNull_Command SelectedStudentNotNull { get; set; }
 
         //Private Variables
         private string _Class_Intials, _Class_Name;
         private Test _SelectedTest;
         private Student _SelectedStudent;
+        private ObservableCollection<Student> _Students;
         private bool _HasTests;
 
         //INotifyPropertyChanged

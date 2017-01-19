@@ -4,7 +4,7 @@ using System.ComponentModel;
 
 namespace AceGrading
 {
-    public class ShortAnswer : Question, QuestionInterface, INotifyPropertyChanged
+    public class ShortAnswer : Question, INotifyPropertyChanged
     {
         public ShortAnswer(Test _ParentTest)
         {
@@ -62,10 +62,6 @@ namespace AceGrading
         private int _MaxAnswerLength;
         
         //Private methods
-        string QuestionInterface.Question_Type()
-        {
-            return "Short Answer";
-        }
         private int GetWordsRemaining()
         {
             int maxWords = 20;
@@ -84,20 +80,6 @@ namespace AceGrading
                 MaxAnswerLength = int.MaxValue;
 
             return maxWords - numWords + 1;
-        }
-
-        //INotifyPropertyChanged
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected virtual void OnPropertyChanged(string propertyName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-        protected bool SetField<T>(ref T field, T value, string propertyName)
-        {
-            if (EqualityComparer<T>.Default.Equals(field, value)) return false;
-            field = value;
-            OnPropertyChanged(propertyName);
-            return true;
         }
     }
 }

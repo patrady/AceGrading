@@ -25,6 +25,7 @@
         <SolidColorBrush x:Key="OffWhite" Color="#FFE8E8E8"/>
         <SolidColorBrush x:Key="Aqua" Color="#FF56C2BC"/>
         <SolidColorBrush x:Key="Yellow" Color="#FFFFE46D"/>
+        <SolidColorBrush x:Key="TestIconColor" Color="#FF0072CF"/>
 
         <FontFamily x:Key="Font">CalibriLight</FontFamily>
 
@@ -33,6 +34,7 @@
         <GridLength x:Key="SquareDim">60</GridLength>
         <GridLength x:Key="SmallGridDim">30</GridLength>
         <GridLength x:Key="RectDim">300</GridLength>
+        <sys:Double x:Key="SquareDimDouble">60</sys:Double>
         
         <sys:Double x:Key="FontSize">         15</sys:Double>
         <sys:Double x:Key="SmallProfilePic">  39</sys:Double>
@@ -47,6 +49,10 @@
 
         <converters:BooleanToVisibilityConverter x:Key="BoolToVis"/>
         <local:InverseBooleanToVisibilityConverter x:Key="InvserseBoolToVis"/>
+        <local:BooleanToCollapseConverter x:Key="BoolToCollapse"/>
+        <local:InverseBooleanToCollapseConverter x:Key="InverseBoolToCollapse"/>
+        <local:EnumToBooleanConverter x:Key="EnumConverter"/>
+        <local:InverseBoolean x:Key="InverseBool"/>
 
 
         <Style TargetType="Button" x:Key="ImageBtn">
@@ -155,6 +161,93 @@
                 <Trigger Property="IsMouseOver" Value="False">
                     <Setter Property="Background" Value="SteelBlue"/>
                 </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="OnSwitch" TargetType="{x:Type ToggleButton}">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border CornerRadius="5,0,0,5" Background="{TemplateBinding Background}">
+                            <TextBlock Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <ContentPresenter/>
+                            </TextBlock>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <MultiTrigger>
+                    <MultiTrigger.Conditions>
+                        <Condition Property="IsMouseOver" Value="True"/>
+                        <Condition Property="IsChecked" Value="True"/>
+                    </MultiTrigger.Conditions>
+                    <Setter Property="Background" Value="{StaticResource LightGreen}"/>
+                </MultiTrigger>
+                <MultiTrigger>
+                    <MultiTrigger.Conditions>
+                        <Condition Property="IsMouseOver" Value="False"/>
+                        <Condition Property="IsChecked" Value="True"/>
+                    </MultiTrigger.Conditions>
+                    <Setter Property="Background" Value="{StaticResource Green}"/>
+                </MultiTrigger>
+                <MultiTrigger>
+                    <MultiTrigger.Conditions>
+                        <Condition Property="IsMouseOver" Value="True"/>
+                        <Condition Property="IsChecked" Value="False"/>
+                    </MultiTrigger.Conditions>
+                    <Setter Property="Background" Value="LightSteelBlue"/>
+                </MultiTrigger>
+                <MultiTrigger>
+                    <MultiTrigger.Conditions>
+                        <Condition Property="IsMouseOver" Value="False"/>
+                        <Condition Property="IsChecked" Value="False"/>
+                    </MultiTrigger.Conditions>
+                    <Setter Property="Background" Value="SteelBlue"/>
+                </MultiTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="OffSwitch" TargetType="{x:Type ToggleButton}">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border CornerRadius="0,5,5,0" Background="{TemplateBinding Background}">
+                            <TextBlock Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <ContentPresenter/>
+                            </TextBlock>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <MultiTrigger>
+                    <MultiTrigger.Conditions>
+                        <Condition Property="IsMouseOver" Value="True"/>
+                        <Condition Property="IsChecked" Value="True"/>
+                    </MultiTrigger.Conditions>
+                    <Setter Property="Background" Value="{StaticResource LightGreen}"/>
+                </MultiTrigger>
+                <MultiTrigger>
+                    <MultiTrigger.Conditions>
+                        <Condition Property="IsMouseOver" Value="False"/>
+                        <Condition Property="IsChecked" Value="True"/>
+                    </MultiTrigger.Conditions>
+                    <Setter Property="Background" Value="{StaticResource Green}"/>
+                </MultiTrigger>
+                <MultiTrigger>
+                    <MultiTrigger.Conditions>
+                        <Condition Property="IsMouseOver" Value="True"/>
+                        <Condition Property="IsChecked" Value="False"/>
+                    </MultiTrigger.Conditions>
+                    <Setter Property="Background" Value="LightSteelBlue"/>
+                </MultiTrigger>
+                <MultiTrigger>
+                    <MultiTrigger.Conditions>
+                        <Condition Property="IsMouseOver" Value="False"/>
+                        <Condition Property="IsChecked" Value="False"/>
+                    </MultiTrigger.Conditions>
+                    <Setter Property="Background" Value="SteelBlue"/>
+                </MultiTrigger>
             </Style.Triggers>
         </Style>
 

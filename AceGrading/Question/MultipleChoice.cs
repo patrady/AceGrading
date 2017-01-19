@@ -6,7 +6,7 @@ using System.Windows.Input;
 
 namespace AceGrading
 {
-    public class MultipleChoice : Question, QuestionInterface, INotifyPropertyChanged
+    public class MultipleChoice : Question, INotifyPropertyChanged
     {
         public MultipleChoice() { }
         public MultipleChoice(Test _ParentTest)
@@ -16,6 +16,7 @@ namespace AceGrading
             Answer = null;
             IncrementOptions = new IncrementMultChoiceOptions_Command(this);
             DecrementOptions = new DecrementMultChoiceOptions_Command(this);
+            CopyMultChoiceOptions = new CopyMultipleChoiceOptions_Command(this);
             OptionalAnswers = new ObservableCollection<MultipleChoiceAnswer_UI>();
             AnswersToPickFrom = new ObservableCollection<MultipleChoiceAnswer_UI>();
             InitializeAnswerToPickFrom();
@@ -38,10 +39,6 @@ namespace AceGrading
         }
         public ObservableCollection<MultipleChoiceAnswer_UI> OptionalAnswers { get; set; }
         public ObservableCollection<MultipleChoiceAnswer_UI> AnswersToPickFrom { get; set; }
-        string QuestionInterface.Question_Type()
-        {
-            return "Multiple Choice";
-        }
         public int NumberOptions
         {
             get { return _NumberOptions; }
@@ -54,10 +51,49 @@ namespace AceGrading
                 }
             }
         }
+        public bool AllowMultipleAnswers
+        {
+            get { return _AllowMultipleAnswers; }
+            set
+            {
+                if (value != _AllowMultipleAnswers)
+                {
+                    _AllowMultipleAnswers = value;
+                    OnPropertyChanged("AllowMultipleAnswers");
+                }
+            }
+        }
+        public Question SelectedCopyToQuestion
+        {
+            get { return _SelectedCopyToQuestion; }
+            set
+            {
+                if (value != _SelectedCopyToQuestion)
+                {
+                    _SelectedCopyToQuestion = value;
+                    OnPropertyChanged("SelectedCopyToQuestion");
+                }
+            }
+        }
+        public QuestionLayoutPreset_UI SelectedPreset
+        {
+            get { return _SelectedPreset; }
+            set
+            {
+                if (value != _SelectedPreset)
+                {
+                    _SelectedPreset = value;
+                    OnPropertyChanged("SelectedPreset");
+                    if (_SelectedPreset != null)
+                        CopyAnswersFromPreset();
+                }
+            }
+        }
 
         //Commands
         public IncrementMultChoiceOptions_Command IncrementOptions { get; set; }
         public DecrementMultChoiceOptions_Command DecrementOptions { get; set; }
+        public CopyMultipleChoiceOptions_Command CopyMultChoiceOptions { get; set; }
 
         //Public Methods
         public void AddToOptionalList()
@@ -75,21 +111,34 @@ namespace AceGrading
             //Add to the Optional List
             this.OptionalAnswers.Add(this.AnswersToPickFrom[Index]);
             this.NumberOptions++;
+
+            //Clear the Preset layout, if there was one chosen
+            SetSelectedPresetToNull();
         }
         public void RemoveFromOptionalList()
         {
-            this.OptionalAnswers.RemoveAt(this.OptionalAnswers.Count - 1);
+            int index = this.OptionalAnswers.Count - 1;
+            this.OptionalAnswers[index].isAnswer = false;
+            this.OptionalAnswers[index].isStartingOption = false;
+            this.OptionalAnswers.RemoveAt(index);
             this.NumberOptions--;
+
+            //Clear the Preset layout, if there was one chosen
+            SetSelectedPresetToNull();
         }
         public void ChangeStartingOptionalAnswer(MultipleChoiceAnswer_UI newStart)
         {
             //Get the index of the new starting option
             int index = this.AnswersToPickFrom.IndexOf(newStart);
+            int tempNumOptions = this.NumberOptions;
 
             //Remove all of the previously added answers
             this.OptionalAnswers.Clear();
+            //while (this.OptionalAnswers.Count > 0)
+            //    RemoveFromOptionalList();
 
             //Add the answers with the new starting option, accomidating for an Z->A change and for the respective number of options selected
+            this.NumberOptions = tempNumOptions;
             for (int i = 0; i < this.NumberOptions; i++)
                 this.OptionalAnswers.Add(this.AnswersToPickFrom[(index + i) % AnswersToPickFrom.Count]);
         }
@@ -108,6 +157,37 @@ namespace AceGrading
             foreach (MultipleChoiceAnswer_UI answer in this.AnswersToPickFrom)
                 if (answer.Letter != correctAnswer.Letter && answer.isAnswer)
                     answer.isAnswer = false;
+        }
+        public void CopyAnswersFromPreset()
+        {
+            if (SelectedPreset != null)
+            {
+                if (SelectedPreset.NumberOfLetters > 0)
+                {
+                    this.NumberOptions = SelectedPreset.NumberOfLetters;
+                    int index = SelectedPreset.Letters[0] - 'A';
+                    this.AnswersToPickFrom[index].isStartingOption = true;
+                }
+            }
+        }
+        public void CopyAnswersFromQuestion(Question copyQuestion)
+        {
+            if (copyQuestion != null)
+            {
+                if (copyQuestion is MultipleChoice)
+                {
+                    MultipleChoice multChoice = copyQuestion as MultipleChoice;
+                    if (multChoice.NumberOptions > 0)
+                    {
+                        //If the copying question has at least one optional answer, then set the number of optional answers and then change the starting option
+                        this.NumberOptions = multChoice.NumberOptions;
+                        int index = multChoice.OptionalAnswers[0].Letter - 'A';
+                        this.ChangeStartingOptionalAnswer((this.AnswersToPickFrom[index]));
+                        this.AnswersToPickFrom[index].isStartingOption = true;
+                        this.EnsureOnlyOneStartingOption(this.AnswersToPickFrom[index]);
+                    }
+                }
+            }
         }
 
         //Private Methods
@@ -146,24 +226,17 @@ namespace AceGrading
             for (int i = 0; i < 4; i++)
                 this.OptionalAnswers.Add(this.AnswersToPickFrom[i]);
         }
-
-        //INotifyPropertyChanged
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected virtual void OnPropertyChanged(string propertyName)
+        private void SetSelectedPresetToNull()
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-        protected bool SetField<T>(ref T field, T value, string propertyName)
-        {
-            if (EqualityComparer<T>.Default.Equals(field, value)) return false;
-            field = value;
-            OnPropertyChanged(propertyName);
-            return true;
+            this.SelectedPreset = null;
         }
 
         //Private Variables
         private string _Answer;
+        private bool _AllowMultipleAnswers;
         private int _NumberOptions;
+        private Question _SelectedCopyToQuestion;
+        private QuestionLayoutPreset_UI _SelectedPreset;
     }
 
     public class MultipleChoiceAnswer_UI : INotifyPropertyChanged
@@ -181,15 +254,12 @@ namespace AceGrading
             get { return _isStartingOption; }
             set
             {
-                if (value != _isStartingOption)
+                _isStartingOption = value;
+                OnPropertyChanged("isStartingOption");
+                if (_isStartingOption)
                 {
-                    _isStartingOption = value;
-                    OnPropertyChanged("isStartingOption");
-                    if (_isStartingOption)
-                    {
-                        parentQuestion.EnsureOnlyOneStartingOption(this);
-                        parentQuestion.ChangeStartingOptionalAnswer(this);
-                    }
+                    parentQuestion.EnsureOnlyOneStartingOption(this);
+                    parentQuestion.ChangeStartingOptionalAnswer(this);
                 }
             }
         }
@@ -272,6 +342,31 @@ namespace AceGrading
         {
             //Remove the last letter in the correct options dockpanel
             this.question.RemoveFromOptionalList();
+        }
+    }
+
+    public class CopyMultipleChoiceOptions_Command : ICommand
+    {
+        MultipleChoice question;
+        public event EventHandler CanExecuteChanged;
+
+        public CopyMultipleChoiceOptions_Command(MultipleChoice _Question)
+        {
+            question = _Question;
+        }
+
+        public bool CanExecute(object parameter)
+        {
+            return true;
+        }
+
+        public void Execute(object parameter)
+        {
+            //Remove the last letter in the correct options dockpanel
+            this.question.CopyAnswersFromQuestion(this.question.SelectedCopyToQuestion);
+
+            //Set the SelectedCopyToQuestion to null because it's UI parent should be blank
+            this.question.SelectedCopyToQuestion = null;
         }
     }
 }

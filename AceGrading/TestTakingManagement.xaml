@@ -7,92 +7,16 @@
              mc:Ignorable="d" 
              d:DesignHeight="{StaticResource DesignHeight}" d:DesignWidth="1500">
     <UserControl.Resources>
-        <Style x:Key="OnSwitch" TargetType="{x:Type ToggleButton}">
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="ToggleButton">
-                        <Border CornerRadius="5,0,0,5" Background="{TemplateBinding Background}">
-                            <TextBlock Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <ContentPresenter/>
-                            </TextBlock>
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-            <Style.Triggers>
-                <MultiTrigger>
-                    <MultiTrigger.Conditions>
-                        <Condition Property="IsMouseOver" Value="True"/>
-                        <Condition Property="IsChecked" Value="True"/>
-                    </MultiTrigger.Conditions>
-                    <Setter Property="Background" Value="{StaticResource LightGreen}"/>
-                </MultiTrigger>
-                <MultiTrigger>
-                    <MultiTrigger.Conditions>
-                        <Condition Property="IsMouseOver" Value="False"/>
-                        <Condition Property="IsChecked" Value="True"/>
-                    </MultiTrigger.Conditions>
-                    <Setter Property="Background" Value="{StaticResource Green}"/>
-                </MultiTrigger>
-                <MultiTrigger>
-                    <MultiTrigger.Conditions>
-                        <Condition Property="IsMouseOver" Value="True"/>
-                        <Condition Property="IsChecked" Value="False"/>
-                    </MultiTrigger.Conditions>
-                    <Setter Property="Background" Value="LightSteelBlue"/>
-                </MultiTrigger>
-                <MultiTrigger>
-                    <MultiTrigger.Conditions>
-                        <Condition Property="IsMouseOver" Value="False"/>
-                        <Condition Property="IsChecked" Value="False"/>
-                    </MultiTrigger.Conditions>
-                    <Setter Property="Background" Value="SteelBlue"/>
-                </MultiTrigger>
-            </Style.Triggers>
-        </Style>
-        <Style x:Key="OffSwitch" TargetType="{x:Type ToggleButton}">
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="ToggleButton">
-                        <Border CornerRadius="0,5,5,0" Background="{TemplateBinding Background}">
-                            <TextBlock Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <ContentPresenter/>
-                            </TextBlock>
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-            <Style.Triggers>
-                <MultiTrigger>
-                    <MultiTrigger.Conditions>
-                        <Condition Property="IsMouseOver" Value="True"/>
-                        <Condition Property="IsChecked" Value="True"/>
-                    </MultiTrigger.Conditions>
-                    <Setter Property="Background" Value="{StaticResource LightGreen}"/>
-                </MultiTrigger>
-                <MultiTrigger>
-                    <MultiTrigger.Conditions>
-                        <Condition Property="IsMouseOver" Value="False"/>
-                        <Condition Property="IsChecked" Value="True"/>
-                    </MultiTrigger.Conditions>
-                    <Setter Property="Background" Value="{StaticResource Green}"/>
-                </MultiTrigger>
-                <MultiTrigger>
-                    <MultiTrigger.Conditions>
-                        <Condition Property="IsMouseOver" Value="True"/>
-                        <Condition Property="IsChecked" Value="False"/>
-                    </MultiTrigger.Conditions>
-                    <Setter Property="Background" Value="LightSteelBlue"/>
-                </MultiTrigger>
-                <MultiTrigger>
-                    <MultiTrigger.Conditions>
-                        <Condition Property="IsMouseOver" Value="False"/>
-                        <Condition Property="IsChecked" Value="False"/>
-                    </MultiTrigger.Conditions>
-                    <Setter Property="Background" Value="SteelBlue"/>
-                </MultiTrigger>
-            </Style.Triggers>
-        </Style>
+        <Storyboard x:Key="ExpandUpdateTime">
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(FrameworkElement.MinHeight)" Storyboard.TargetName="UpdateDate_StkPnl">
+                <EasingDoubleKeyFrame KeyTime="0:0:0.4" Value="130"/>
+            </DoubleAnimationUsingKeyFrames>
+        </Storyboard>
+        <Storyboard x:Key="CollapseUpdateTime">
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(FrameworkElement.MinHeight)" Storyboard.TargetName="UpdateDate_StkPnl">
+                <EasingDoubleKeyFrame KeyTime="0:0:0.4" Value="0"/>
+            </DoubleAnimationUsingKeyFrames>
+        </Storyboard>
     </UserControl.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
@@ -102,67 +26,8 @@
 
         <Grid Name="Grid1" Background="{DynamicResource OffWhite}">
             <Grid Margin="10,0,10,10">
-                <Grid Name="TestSelection_Grid" Visibility="{Binding SelectedClass.HasTests, Converter={StaticResource BoolToVis}}" d:IsHidden="True">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="{StaticResource SquareDim}"/>
-                        <RowDefinition Height="{StaticResource SquareDim}"/>
-                        <RowDefinition Height="{StaticResource SquareDim}"/>
-                        <RowDefinition Height="{StaticResource SquareDim}"/>
-                        <RowDefinition/>
-                    </Grid.RowDefinitions>
-                    <TextBlock Text="Test Taking" VerticalAlignment="Center"/>
-                    <Button Content="Start" HorizontalAlignment="Right" Style="{DynamicResource BlueTextBtn}" VerticalAlignment="Center" Click="StartTestSelection_Click"/>
-                    <Ellipse Width="{DynamicResource LargeProfilePic}" Fill="{DynamicResource DarkSteelBlue}" Height="{DynamicResource LargeProfilePic}" Grid.Row="1" Grid.RowSpan="2"/>
-
-                    <TextBlock Text="{Binding SelectedClass.SelectedTest.Initials}" Grid.Row="1" Grid.RowSpan="2" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="60" Foreground="White"/>
-                    <StackPanel Grid.Row="3" Grid.RowSpan="2">
-                        <TextBlock Text="{Binding SelectedClass.SelectedTest.TestName}" HorizontalAlignment="Center" FontSize="20" Foreground="Black"/>
-                        <TextBlock Text="{Binding SelectedClass.SelectedTest.Answers.Count, StringFormat={}Questions: {0}}" HorizontalAlignment="Center"/>
-                        <TextBlock Text="{Binding SelectedClass.SelectedTest.DateModified, StringFormat={}Modified: {0}}" HorizontalAlignment="Center"/>
-                    </StackPanel>
-
-                    <Grid Grid.Row="4" Margin="0,10,0,0">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="25"/>
-                            <RowDefinition/>
-                            <RowDefinition Height="25"/>
-                        </Grid.RowDefinitions>
-                        <TextBlock Text="Switch Test" VerticalAlignment="Center"/>
-                        <ListBox Name="testListbx" Grid.Row="1" Background="Transparent" BorderBrush="{x:Null}" 
-                             ScrollViewer.VerticalScrollBarVisibility="Auto" HorizontalContentAlignment="Stretch" 
-                             ItemsSource="{Binding SelectedClass.Tests}" SelectedItem="{Binding SelectedClass.SelectedTest}">                   
-                            <ListBox.ItemTemplate>
-                                <DataTemplate>
-                                    <Grid Name="ListItem_Grid" Height="{DynamicResource SmallProfilePic}" Background="Transparent">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="40"/>
-                                            <ColumnDefinition Width="*"/>
-                                        </Grid.ColumnDefinitions>
-                                        <Ellipse Height="{DynamicResource SmallProfilePic}" Width="{DynamicResource SmallProfilePic}" Fill="{DynamicResource DarkSteelBlue}"/>
-                                        <TextBlock Text="{Binding Initials}" VerticalAlignment="Center" Foreground="White" HorizontalAlignment="Center"/>
-                                        <TextBlock Text="{Binding TestName}" Grid.Column="1" Margin="10,0,50,0" TextWrapping="Wrap" Foreground="{DynamicResource DarkGray}" VerticalAlignment="Center" Width="160" />
-                                    </Grid>
-                                </DataTemplate>
-                            </ListBox.ItemTemplate>
-                        </ListBox>
-                    </Grid>
-                </Grid>
-
-                <Grid Name="NoTests_Grid" Visibility="{Binding HasClasses, Converter={StaticResource InvserseBoolToVis}, FallbackValue=Hidden}" Background="{Binding ElementName=Grid1, Path=Background}" d:IsHidden="True">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="{StaticResource SquareDim}"/>
-                        <RowDefinition/>
-                    </Grid.RowDefinitions>
-                    <TextBlock Text="Tests" VerticalAlignment="Center"/>
-                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="1">
-                        <TextBlock FontStyle="Italic" TextAlignment="Center" TextWrapping="Wrap" FontSize="18" VerticalAlignment="Center" Foreground="Black">
-                    There seems to be no tests yet, <LineBreak/> create a test first and <LineBreak/>then return here.
-                        </TextBlock>
-                    </StackPanel>
-                </Grid>
-
                 <Grid Name="ClassroomGrid">
-                    <Grid Name="TestSetup_Grid" Background="{Binding ElementName=Grid1, Path=Background}">
+                    <Grid Name="TestSetup_Grid" Background="{Binding ElementName=Grid1, Path=Background}" d:IsHidden="True">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="{StaticResource SquareDim}"/>
                             <RowDefinition Height="{StaticResource ExtraLargeSquareDim}"/>
@@ -173,7 +38,6 @@
                         </Grid.RowDefinitions>
                         <TextBlock Text="Test Taking Setup" VerticalAlignment="Center"/>
                         <Button Content="Start" HorizontalAlignment="Right" VerticalAlignment="Center" Style="{StaticResource BlueTextBtn}" Click="StartTest_Click" Command="{Binding SelectedClass.SelectedTest.StartTest}"/>
-                        <Button Content="Back" Style="{DynamicResource RedTextBtn}" VerticalAlignment="Top" HorizontalAlignment="Left" Click="BackToTestSelection_Click"/>
 
                         <!--Test Information-->
                         <StackPanel Grid.Row="1">
@@ -221,115 +85,184 @@
                         <StackPanel Grid.Row="3">
                             <TextBlock Text="Student Arrangement"/>
                             <Button Content="Alphabetical" Style="{StaticResource BlueTextBtn}" HorizontalAlignment="Left" Margin="{StaticResource SmallIndent}"
-                                    ToolTip="Arrange Students Alphabetically"/>
+                                    ToolTip="Arrange Students Alphabetically" Command="{Binding SelectedClass.ClassLayout.AlphabeticalArrangement}"/>
                             <Button Content="Random" Style="{StaticResource BlueTextBtn}" HorizontalAlignment="Left" Margin="{StaticResource SmallIndent}"
-                                    ToolTip="Arrange Students Randomly"/>
+                                    ToolTip="Arrange Students Randomly" Command="{Binding SelectedClass.ClassLayout.RandomArrangement}"/>
                             <TextBlock Text="{Binding SelectedClass.ClassLayout.DisjointStudents.Count, StringFormat={}{0} Student(s) to Place, FallbackValue='10 Students to Place'}" Foreground="Black" Margin="{StaticResource SmallIndent}"/>
                         </StackPanel>
 
                         <!--Time Picking-->
                         <StackPanel Grid.Row="4">
-                            <TextBlock Text="Test Time"/>
+                            <TextBlock Text="Test End Time"/>
                             <local:TimePicker Foreground="Black" Time="{Binding SelectedClass.SelectedTest.EndTime, Mode=TwoWay}" LimitTo24Hour="True"/>
                         </StackPanel>
                     </Grid>
 
-                    <Grid Name="StartTest_Grid" Background="{Binding ElementName=Grid1, Path=Background}" d:IsHidden="True">
+                    <Grid Name="StartTest_Grid" Background="{Binding ElementName=Grid1, Path=Background}">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="{StaticResource SquareDim}"/>
-                            <RowDefinition Height="{StaticResource ExtraLargeSquareDim}"/>
-                            <RowDefinition Height="200"/>
-                            <RowDefinition Height="{StaticResource RectDim}"/>
-                            <RowDefinition Height="{StaticResource LargeSquareDim}"/>
+                            <RowDefinition/>
                         </Grid.RowDefinitions>
                         <TextBlock Text="Monitoring Testers" VerticalAlignment="Center"/>
                         <Button Content="End Test" Style="{DynamicResource BlueTextBtn}" HorizontalAlignment="Right" VerticalAlignment="Center" Click="EndTest_Click"/>
 
-                        <!--Pause, Resume-->
-                        <StackPanel Grid.Row="4">
-                            <TextBlock Text="Test Status"/>
-                            <DockPanel Margin="{StaticResource SmallIndent}" HorizontalAlignment="Left">
-                                <RadioButton Content="Resume" Style="{DynamicResource OnSwitch}" Width="100" Height="30" IsChecked="True"/>
-                                <RadioButton Style="{DynamicResource OffSwitch}" Content="Pause" Width="100" IsChecked="{Binding SelectedClass.SelectedTest.IsPaused, Mode=TwoWay}"/>
-                            </DockPanel>
-                        </StackPanel>
-
-                        <!--Wifi Monitoring-->
                         <StackPanel Grid.Row="1">
-                            <TextBlock Text="Internet Monitoring"/>
-                            <DockPanel HorizontalAlignment="Left" Margin="{StaticResource SmallIndent}">
-                                <RadioButton Name="WifiTgleBtn" Content="Enable" Style="{DynamicResource OnSwitch}" 
-                                          Height="30" Width="100" HorizontalAlignment="Left" IsChecked="{Binding SelectedClass.SelectedTest.IsWifiDetectionEnabled, Mode=TwoWay}"/>
-                                <RadioButton Content="Disable" Style="{DynamicResource OffSwitch}"
+                           
+                            <!--Wifi Monitoring-->
+                            <StackPanel>
+                                <TextBlock Text="Internet Monitoring"/>
+                                <DockPanel HorizontalAlignment="Left" Margin="{StaticResource SmallIndent}">
+                                    <RadioButton Name="WifiTgleBtn" Content="Enable" Style="{DynamicResource OnSwitch}" 
+                                          Height="30" Width="100" HorizontalAlignment="Left" IsChecked="{Binding SelectedClass.SelectedTest.IsWifiDetectionEnabled, Mode=TwoWay, FallbackValue=True}">
+                                        <RadioButton.Triggers>
+                                            <EventTrigger RoutedEvent="ToggleButton.Checked">
+                                                <BeginStoryboard>
+                                                    <Storyboard x:Name="ExpandWifiMonitoring">
+                                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(FrameworkElement.MaxHeight)" Storyboard.TargetName="WifiManagement_Grid">
+                                                            <EasingDoubleKeyFrame KeyTime="0:0:0.4" Value="200"/>
+                                                        </DoubleAnimationUsingKeyFrames>
+                                                    </Storyboard>
+                                                </BeginStoryboard>
+                                            </EventTrigger>
+                                            <EventTrigger RoutedEvent="ToggleButton.Unchecked">
+                                                <BeginStoryboard>
+                                                    <Storyboard x:Name="CollapseWifiMonitoring">
+                                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(FrameworkElement.MaxHeight)" Storyboard.TargetName="WifiManagement_Grid">
+                                                            <EasingDoubleKeyFrame KeyTime="0:0:0.4" Value="0"/>
+                                                        </DoubleAnimationUsingKeyFrames>
+                                                    </Storyboard>
+                                                </BeginStoryboard>
+                                            </EventTrigger>
+                                        </RadioButton.Triggers>
+                                    </RadioButton>
+                                    <RadioButton Content="Disable" Style="{DynamicResource OffSwitch}"
                                          Height="30" Width="100" HorizontalAlignment="Left"/>
-                            </DockPanel>
+                                </DockPanel>
 
-                            <StackPanel Name="WifiMonitoringStkPnl" Visibility="{Binding ElementName=WifiTgleBtn, Path=IsChecked, Converter={StaticResource BoolToVis}}">
-                                <DockPanel>
-                                    <Image Source="pack://application:,,,/Icons/wifi_good.png" 
-                                   Height="60" HorizontalAlignment="Left" Margin="{StaticResource SmallIndent}"/>
-                                    <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="Black">
-                                           No worries!<LineBreak/> No internet usage <LineBreak/> has been detected.</TextBlock>
-                                </DockPanel>
-                                <DockPanel>
-                                    <Image Source="pack://application:,,,/Icons/wifi_bad.png"
-                                       Height="60" HorizontalAlignment="Left" Margin="{StaticResource SmallIndent}"/>
-                                </DockPanel>
+                                <StackPanel Name="WifiManagement_Grid">
+                                    <!--DockPanel displaying that no students are using the internet-->
+                                    <DockPanel Margin="0,10,0,0" Visibility="{Binding SelectedClass.SelectedTest.HasWifiUsers, Converter={StaticResource InverseBoolToCollapse}, FallbackValue=Collapsed}" HorizontalAlignment="Center">
+                                        <Image Source="/Icons/wifi_good.png" 
+                                               Height="60" HorizontalAlignment="Left"/>
+                                        <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="Black">
+                                                   No worries!<LineBreak/> No internet usage <LineBreak/> has been detected.</TextBlock>
+                                    </DockPanel>
+
+                                    <!--Grid displaying that at least one student is using the internet-->
+                                    <Grid Visibility="{Binding SelectedClass.SelectedTest.HasWifiUsers, Converter={StaticResource BoolToCollapse}}" Margin="0,10,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="60"/>
+                                            <ColumnDefinition/>
+                                        </Grid.ColumnDefinitions>
+                                        <Image Source="/Icons/wifi_bad.png" Grid.Column="0"
+                                                HorizontalAlignment="Left"/>
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="Black" TextWrapping="Wrap" 
+                                                   Text="{Binding Path=SelectedClass.SelectedTest.WifiUsers.Count, StringFormat={}The following student(s) were detected using the internet: {0}}"/>
+                                            <ListBox MaxHeight="100" Background="{x:Null}" BorderBrush="{x:Null}" ItemsSource="{Binding SelectedClass.SelectedTest.WifiUsers}">
+                                                <ListBox.ItemTemplate>
+                                                    <DataTemplate DataType="{x:Type local:Student}">
+                                                        <Grid Height="40" Background="Transparent">
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="40"/>
+                                                                <ColumnDefinition Width="*"/>
+                                                            </Grid.ColumnDefinitions>
+                                                            <Ellipse Height="{DynamicResource SmallProfilePic}" Width="{DynamicResource SmallProfilePic}" Fill="{DynamicResource Red}"/>
+                                                            <TextBlock Text="{Binding Initials}" VerticalAlignment="Center" Foreground="White" HorizontalAlignment="Center"/>
+                                                            <TextBlock Text="{Binding StudentName}" Foreground="{DynamicResource DarkGray}"  Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </ListBox.ItemTemplate>
+                                            </ListBox>
+                                        </StackPanel>
+                                    </Grid>
+                                </StackPanel>
                             </StackPanel>
-                        </StackPanel>
+                            
+                            <!--Time Remaining and Update End Time-->
+                            <StackPanel Margin="0,10,0,0">
+                                <TextBlock Text="Time Remaining"/>
+                                <StackPanel HorizontalAlignment="Center">
+                                    <TextBlock FontSize="20" Foreground="Black" HorizontalAlignment="Center">
+                                        <TextBlock.Text>
+                                            <MultiBinding StringFormat="{}{0:00} : {1:00} : {2:00}">
+                                                <Binding Path="SelectedClass.SelectedTest.TimeRemaining.Hours" FallbackValue="00"/>
+                                                <Binding Path="SelectedClass.SelectedTest.TimeRemaining.Minutes" FallbackValue="00"/>
+                                                <Binding Path="SelectedClass.SelectedTest.TimeRemaining.Seconds" FallbackValue="00"/>
+                                            </MultiBinding>
+                                        </TextBlock.Text>
+                                    </TextBlock>
+                                    <Button Name="ChangeTimeTgleBtn" Content="Change Finish Time" Style="{DynamicResource BlueTextBtn}" HorizontalAlignment="Center">
+                                        <Button.Triggers>
+                                            <EventTrigger RoutedEvent="Button.Click">
+                                                <BeginStoryboard Storyboard="{StaticResource ExpandUpdateTime}"/>
+                                            </EventTrigger>
+                                        </Button.Triggers>
+                                    </Button>
+                                </StackPanel>
 
-                        <!--Login Keys-->
-                        <Grid Grid.Row="3">
-                            <TextBlock Text="Login Keys"/>
-                            <Button Content="Print" Style="{DynamicResource BlueTextBtn}" HorizontalAlignment="Right" VerticalAlignment="Top"/>
-                            <ListBox Margin="0,25,0,0"
+                                <StackPanel Name="UpdateDate_StkPnl" Height="0" DataContext="{Binding SelectedClass.SelectedTest}" HorizontalAlignment="Center">
+                                    <local:TimePicker Foreground="Black" HorizontalAlignment="Left" Margin="0,10,0,0" Time="{Binding NewEndTime, Mode=TwoWay}" LimitTo24Hour="True"/>
+                                    <DockPanel HorizontalAlignment="Center" Margin="0,10,0,0">
+                                        <Button Content="Cancel" Style="{DynamicResource RedTextBtn}" Margin="10,0">
+                                            <Button.Triggers>
+                                                <EventTrigger RoutedEvent="Button.Click">
+                                                    <BeginStoryboard Storyboard="{StaticResource CollapseUpdateTime}"/>
+                                                </EventTrigger>
+                                            </Button.Triggers>
+                                        </Button>
+                                        <Button Content="Update" Style="{DynamicResource BlueTextBtn}" Margin="10,0" Command="{Binding UpdateTestEndTime}">
+                                            <Button.Triggers>
+                                                <EventTrigger RoutedEvent="Button.Click">
+                                                    <BeginStoryboard Storyboard="{StaticResource CollapseUpdateTime}"/>
+                                                </EventTrigger>
+                                            </Button.Triggers>
+                                        </Button>
+                                    </DockPanel>
+                                    
+                                </StackPanel>
+                            </StackPanel>
+
+                            <!--Login Keys-->
+                            <Grid Margin="0,10,0,0">
+                                <TextBlock Text="Login Keys"/>
+                                <Button Content="Print" Style="{DynamicResource BlueTextBtn}" HorizontalAlignment="Right" VerticalAlignment="Top"/>
+                                <ListBox Margin="0,25,0,0" MaxHeight="300"
                                      ScrollViewer.VerticalScrollBarVisibility="Auto" 
                                      Background="Transparent" BorderBrush="{x:Null}" 
                                      ItemsSource="{Binding SelectedClass.Students}">
-                                <ListBox.Resources>
-                                    <DataTemplate DataType="{x:Type local:Student}">
-                                        <Grid Height="40" Background="Transparent">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="40"/>
-                                                <ColumnDefinition Width="*"/>
-                                            </Grid.ColumnDefinitions>
-                                            <Ellipse Height="{DynamicResource SmallProfilePic}" Width="{DynamicResource SmallProfilePic}" Fill="{DynamicResource BrightBlue}"/>
-                                            <TextBlock Text="{Binding Initials}" VerticalAlignment="Center" Foreground="White" HorizontalAlignment="Center"/>
-                                            <StackPanel  Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding StudentName}" Foreground="{DynamicResource DarkGray}"/>
-                                                <TextBlock Text="{Binding LoginKey, StringFormat={}Login Key: {0}}" Foreground="{DynamicResource DarkGray}"/>
-                                            </StackPanel>
-                                        </Grid>
-                                    </DataTemplate>
-                                </ListBox.Resources>
-                            </ListBox>
-                        </Grid>
+                                    <ListBox.Resources>
+                                        <DataTemplate DataType="{x:Type local:Student}">
+                                            <Grid Height="40" Background="Transparent">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="40"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <Ellipse Height="{DynamicResource SmallProfilePic}" Width="{DynamicResource SmallProfilePic}" Fill="{DynamicResource BrightBlue}"/>
+                                                <TextBlock Text="{Binding Initials}" VerticalAlignment="Center" Foreground="White" HorizontalAlignment="Center"/>
+                                                <StackPanel  Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding StudentName}" Foreground="{DynamicResource DarkGray}"/>
+                                                    <TextBlock Text="{Binding LoginKey, StringFormat={}Login Key: {0}}" Foreground="{DynamicResource DarkGray}"/>
+                                                </StackPanel>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ListBox.Resources>
+                                </ListBox>
+                            </Grid>
 
-                        <!--Time Remaining and Update End Time-->
-                        <StackPanel Grid.Row="2">
-                            <TextBlock Text="Time Remaining"/>
-                            <StackPanel  HorizontalAlignment="Center">
-                                <TextBlock FontSize="20" Foreground="Black" HorizontalAlignment="Center">
-                                    <TextBlock.Text>
-                                        <MultiBinding StringFormat="{}{0:00} : {1:00} : {2:00}">
-                                            <Binding Path="SelectedClass.SelectedTest.TimeRemaining.Hours" FallbackValue="00"/>
-                                            <Binding Path="SelectedClass.SelectedTest.TimeRemaining.Minutes" FallbackValue="00"/>
-                                            <Binding Path="SelectedClass.SelectedTest.TimeRemaining.Seconds" FallbackValue="00"/>
-                                        </MultiBinding>
-                                    </TextBlock.Text>
-                                </TextBlock>
-                                <ToggleButton Name="ChangeTimeTgleBtn" Content="Change Finish Time" IsChecked="True" Style="{DynamicResource BlueTextToggleBtn}" HorizontalAlignment="Center"/>
-                            </StackPanel>
-
-                            <StackPanel Margin="{StaticResource SmallIndent}" Visibility="{Binding ElementName=ChangeTimeTgleBtn, Path=IsChecked, Converter={StaticResource BoolToVis}}"
-                                        DataContext="{Binding SelectedClass.SelectedTest}" HorizontalAlignment="Left">
-                                <local:TimePicker Foreground="Black" HorizontalAlignment="Left" Margin="0,10,0,0" Time="{Binding NewEndTime, Mode=TwoWay}" LimitTo24Hour="True"/>
-                                <Button Content="Update" Style="{DynamicResource BlueTextBtn}" HorizontalAlignment="Center" Command="{Binding UpdateTestEndTime}"/>
+                            <!--Pause, Resume-->
+                            <StackPanel Margin="0,10,0,0">
+                                <TextBlock Text="Test Status"/>
+                                <DockPanel Margin="{StaticResource SmallIndent}" HorizontalAlignment="Left">
+                                    <RadioButton Content="Resume" Style="{DynamicResource OnSwitch}" Width="100" Height="30"
+                                                 IsChecked="{Binding SelectedClass.SelectedTest.TestStatus, Converter={StaticResource EnumConverter}, ConverterParameter={x:Static local:Test_Status.Started}, Mode=TwoWay}"/>
+                                    <RadioButton Style="{DynamicResource OffSwitch}" Content="Pause" Width="100" 
+                                                 IsChecked="{Binding SelectedClass.SelectedTest.TestStatus, Converter={StaticResource EnumConverter}, ConverterParameter={x:Static local:Test_Status.Paused}, Mode=TwoWay}"/>
+                                </DockPanel>
                             </StackPanel>
                         </StackPanel>
                     </Grid>
                 </Grid>
-
             </Grid>
         </Grid>
 

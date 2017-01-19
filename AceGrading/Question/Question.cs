@@ -5,7 +5,7 @@ using System.Windows.Input;
 
 namespace AceGrading
 {
-    public class Question : QuestionInterface, INotifyPropertyChanged
+    public class Question : INotifyPropertyChanged
     {
         public Question()
         {
@@ -43,8 +43,9 @@ namespace AceGrading
             {
                 if (value != _PointValue)
                 {
-                    this.ParentTest.UpdatePointsRemaining(_PointValue, value);
+                    double PrevValue = _PointValue;
                     _PointValue = value;
+                    this.ParentTest.UpdatePointsRemaining(PrevValue, value);
                     OnPropertyChanged("Point_Value");
                 }
             }
@@ -66,10 +67,6 @@ namespace AceGrading
             }
         }
         public object Database_ID { get; set; }
-        string QuestionInterface.Question_Type()
-        {
-            throw new NotImplementedException();
-        }
 
         //Public Commands
         public DeleteQuestion_Command DeleteQuestion { get; set; }

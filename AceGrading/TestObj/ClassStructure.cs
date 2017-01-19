@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Windows.Input;
 
 namespace AceGrading
@@ -18,6 +20,8 @@ namespace AceGrading
             this.IncrementRows = new IncrementClassStructRows_Command(this);
             this.DecrementColumns = new DecrementClassStructColumns_Command(this);
             this.DecrementRows = new DecrementClassStructRows_Command(this);
+            this.AlphabeticalArrangement = new ArrangeStudentsAlphabetically_Command(this);
+            this.RandomArrangement = new ArrangeStudentsRandomly_Command(this);
             this.Desks = new ObservableCollection<object>();
             this.DisjointStudents = new ObservableCollection<Student>();
 
@@ -130,7 +134,8 @@ namespace AceGrading
 
             //Remove the student from the disjoint students list
             this.DisjointStudents.Remove(student);
-            if (this.DisjointStudents.Count == 0) this.HasDisjointStudents = false;
+            if (this.DisjointStudents.Count == 0)
+                this.HasDisjointStudents = false;
 
             if (index > this.Desks.Count - 1)
             {                
@@ -143,8 +148,7 @@ namespace AceGrading
 
                 //Add the new student to that index
                 this.Desks.Insert(index, student);
-            }
-                
+            }          
         }
         /// <summary>
         /// Add a student placeholder to the classroom.
@@ -175,11 +179,31 @@ namespace AceGrading
                 {
                     this.DisjointStudents.Add(this.Desks[index] as Student);
                     this.HasDisjointStudents = true;
+                    (this.Desks[index] as Student).IsInClassroom = false;
                 }
                     
-
                 this.Desks.RemoveAt(index);
             }    
+        }
+        /// <summary>
+        /// Put a student placeholder at the specified row and index.
+        /// </summary>
+        /// <param name="row">Zero-based row index.</param>
+        /// <param name="column">Zero-based column index.</param>
+        public void ReplaceStudentWithPlaceholderAtIndex(int row, int column)
+        {
+            this.DeleteStudentAtIndex(row, column);
+            this.Desks.Insert(row * this.NumColumns + column, new StudentPlaceholder(this, row, column));
+        }
+        /// <summary>
+        /// Returns if a student exists at the specific row and column.
+        /// </summary>
+        /// <param name="row">Zero-based row index.</param>
+        /// <param name="column">Zero-based column index.</param>
+        /// <returns></returns>
+        public bool IsStudentAtIndex(int row, int column)
+        {
+            return this.Desks[row * this.NumColumns + column] is Student;
         }
         /// <summary>
         /// Refreshes the list of students that are not in the classroom. Useful to call whenever a student is newly added to the roster.
@@ -201,6 +225,8 @@ namespace AceGrading
         public IncrementClassStructRows_Command IncrementRows { get; set; }
         public DecrementClassStructColumns_Command DecrementColumns { get; set; }
         public DecrementClassStructRows_Command DecrementRows { get; set; }
+        public ArrangeStudentsAlphabetically_Command AlphabeticalArrangement { get; set; }
+        public ArrangeStudentsRandomly_Command RandomArrangement { get; set; }
 
         //Private Methods
         private int FindMaxRowNum()
@@ -394,6 +420,90 @@ namespace AceGrading
         {
             if (studentPlaceholder.SelectedDisjointStudent != null)
                 studentPlaceholder.AddStudentToClassroom(studentPlaceholder.SelectedDisjointStudent);
+        }
+    }
+
+    public class ArrangeStudentsAlphabetically_Command : ICommand
+    {
+        ClassStructure layout;
+        public event EventHandler CanExecuteChanged;
+        public ArrangeStudentsAlphabetically_Command(ClassStructure _Layout) { layout = _Layout; }
+        public bool CanExecute(object parameter) { return true; }
+        public void Execute(object parameter)
+        {
+            //If there are not enough desks in the current layout then stop
+            if (this.layout.NumRows * this.layout.NumColumns < this.layout.ParentClass.Students.Count)
+                return;
+
+            //Put the students in the classroom
+            int counter = 0;
+            foreach (Student student in this.layout.ParentClass.Students)
+            {
+                //Check if the student was already in the classroom, if so then put a placeholder in it's old place
+                if (student.IsInClassroom)
+                    this.layout.ReplaceStudentWithPlaceholderAtIndex(student.RowIndex, student.ColumnIndex);
+
+                //Add the student to the appropriate desk
+                this.layout.AddStudentAtIndex(student, (int)(counter / this.layout.NumColumns), counter % this.layout.NumColumns);
+                
+                counter++;
+            }
+
+            //Ensure that a student was placed at every spot
+            if (this.layout.DisjointStudents.Count > 0)
+            {
+                //Means a student was not placed at every spot
+                counter = 0;
+                List<Student> DisjointCopy = new List<Student>(this.layout.DisjointStudents);
+                foreach (Student student in DisjointCopy)
+                {
+                    //Find the next available spot
+                    while (this.layout.IsStudentAtIndex((int)(counter / this.layout.NumColumns), counter % this.layout.NumColumns))
+                        counter++;
+
+                    //Put the student at that index
+                    this.layout.AddStudentAtIndex(student, (int)(counter / this.layout.NumColumns), counter % this.layout.NumColumns);
+                }   
+            }
+        }
+    }
+
+    public class ArrangeStudentsRandomly_Command : ICommand
+    {
+        ClassStructure layout;
+        public event EventHandler CanExecuteChanged;
+        public ArrangeStudentsRandomly_Command(ClassStructure _Layout) { layout = _Layout; }
+        public bool CanExecute(object parameter) { return true; }
+        public void Execute(object parameter)
+        {
+            //Return if there is not enough room in the classroom
+            if (this.layout.NumRows * this.layout.NumColumns < this.layout.ParentClass.Students.Count)
+                return;
+
+            //Remove the students from the classroom
+            foreach (Student student in this.layout.ParentClass.Students)
+                if (student.IsInClassroom)
+                    this.layout.ReplaceStudentWithPlaceholderAtIndex(student.RowIndex, student.ColumnIndex);
+
+            //Place the students randomly in the classroom
+            Random rand = new Random();
+            int index;
+            foreach (Student student in this.layout.ParentClass.Students)
+            {
+                try
+                {
+                    //Create a random row and column
+                    index = rand.Next(this.layout.NumRows * this.layout.NumColumns);
+
+                    //Add one to the index until a free spot is found
+                    while (this.layout.IsStudentAtIndex((int)(index / this.layout.NumColumns), index % this.layout.NumColumns))
+                        index = (index + 1) % (this.layout.NumRows * this.layout.NumColumns);
+
+                    //Add the student to the classroom
+                    this.layout.AddStudentAtIndex(student, (int)(index / this.layout.NumColumns), index % this.layout.NumColumns);
+                }
+                catch (Exception e) { Console.WriteLine(e); }
+            }
         }
     }
 }

@@ -24,55 +24,83 @@
             </Setter>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="{StaticResource MediumGray}"/>
+                    <Setter Property="Background" Value="{DynamicResource DeepSeaBlue}"/>
                 </Trigger>
                 <Trigger Property="IsMouseOver" Value="False">
-                    <Setter Property="Background" Value="{StaticResource SeaBlue}"/>
+                    <Setter Property="Background" Value="{DynamicResource SeaBlue}"/>
                 </Trigger>
                 <Trigger Property="IsChecked" Value="True">
-                    <Setter Property="Background" Value="{StaticResource OffWhite}"/>
+                    <Setter Property="Background" Value="{DynamicResource OffWhite}"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
     </Window.Resources>
     <Grid DataContext="{Binding Source={StaticResource ViewModel}}">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="{DynamicResource SquareDim}"/>
-            <ColumnDefinition Width="{DynamicResource RectDim}"/>
+            <ColumnDefinition Width="150"/>
+            <ColumnDefinition Width="{StaticResource RectDim}"/>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
-        <Grid Background="{DynamicResource SeaBlue}">
+        <Grid Background="{DynamicResource SeaBlue}" HorizontalAlignment="Left">
             <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="{DynamicResource SquareDim}"/>
-                    <RowDefinition Height="{DynamicResource SquareDim}"/>
-                    <RowDefinition Height="{DynamicResource SquareDim}"/>
-                    <RowDefinition Height="{DynamicResource SquareDim}"/>
-                    <RowDefinition Height="{DynamicResource SquareDim}"/>
-                    <RowDefinition Height="{DynamicResource SquareDim}"/>
+                    <RowDefinition Height="{StaticResource SquareDim}"/>
+                    <RowDefinition Height="{StaticResource SquareDim}"/>
+                    <RowDefinition Height="{StaticResource SquareDim}"/>
+                    <RowDefinition Height="{StaticResource SquareDim}"/>
+                    <RowDefinition Height="{StaticResource SquareDim}"/>
+                    <RowDefinition Height="{StaticResource SquareDim}"/>
                 </Grid.RowDefinitions>
-                <RadioButton x:Name="HomeMenu_TgleBtn" Style="{StaticResource {x:Type ToggleButton}}">
-                    <Image Source="pack://application:,,,/Icons/HamburgerMenu.png" Margin="10"/>
-                </RadioButton>
-                
+
                 <!--Class Toggle Button-->
                 <RadioButton x:Name="Class_TgleBtn" Grid.Row="1" Style="{StaticResource {x:Type ToggleButton}}" IsChecked="True" ToolTip="Classes">
                     <Grid>
-                        <Ellipse Grid.Row="1" Height="{DynamicResource SmallProfilePic}" Width="{DynamicResource SmallProfilePic}" Fill="{DynamicResource RoyalSeaBlue}"/>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="{StaticResource SquareDim}"/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+
+                        <Ellipse Height="{StaticResource SmallProfilePic}" Width="{StaticResource SmallProfilePic}" Fill="{DynamicResource RoyalSeaBlue}"/>
                         <TextBlock Text="{Binding SelectedClass.Class_Initials}" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White"/>
+
+                        <TextBlock Text="Classes" Foreground="White" TextAlignment="Left" VerticalAlignment="Center" Width="120" Grid.Column="1" Visibility="{Binding ElementName=Class_TgleBtn, Path=IsChecked, Converter={StaticResource InvserseBoolToVis}}"/>
+                        <TextBlock Text="Classes" Foreground="Black" TextAlignment="Left" VerticalAlignment="Center" Width="120" Grid.Column="1" Visibility="{Binding ElementName=Class_TgleBtn, Path=IsChecked, Converter={StaticResource BoolToVis}}"/>
                     </Grid>
                 </RadioButton>
                 
                 <!--Test Toggle Button-->
-                <RadioButton x:Name="Test_TgleBtn" Grid.Row="2" Style="{StaticResource {x:Type ToggleButton}}" ToolTip="Tests"> 
-                    <Image Source="pack://application:,,,/Icons/Test.png" Margin="10"/>
+                <RadioButton x:Name="Test_TgleBtn" Grid.Row="2" Style="{StaticResource {x:Type ToggleButton}}" ToolTip="Tests">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="{StaticResource SquareDim}"/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+
+                        <Ellipse Height="{DynamicResource SmallProfilePic}" Width="{DynamicResource SmallProfilePic}" Fill="{DynamicResource TestIconColor}"/>
+                        <TextBlock Text="{Binding SelectedClass.SelectedTest.Initials}" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White"/>
+
+                        <TextBlock Text="Tests" Foreground="White" TextAlignment="Left" VerticalAlignment="Center" Width="120" Grid.Column="1" Visibility="{Binding ElementName=Test_TgleBtn, Path=IsChecked, Converter={StaticResource InvserseBoolToVis}}"/>
+                        <TextBlock Text="Tests" Foreground="Black" TextAlignment="Left" VerticalAlignment="Center" Width="120" Grid.Column="1" Visibility="{Binding ElementName=Test_TgleBtn, Path=IsChecked, Converter={StaticResource BoolToVis}}"/>
+                    </Grid>
                 </RadioButton>
-                <Image Source="pack://application:,,,/Icons/Test_Selected.png" Margin="10" Grid.Row="2" Visibility="{Binding ElementName=Test_TgleBtn, Path=IsChecked, Converter={StaticResource BoolToVis}}"/>
-                
+
                 <!--Test Taking Toggle Button-->
-                <RadioButton x:Name="TestTaking_TgleBtn" Grid.Row="3" Style="{StaticResource {x:Type ToggleButton}}">
-                    <Image Source="pack://application:,,,/Icons/Checkmark.png" Margin="10"/>
+                <RadioButton x:Name="TestTaking_TgleBtn" Grid.Row="3" Style="{StaticResource {x:Type ToggleButton}}" ToolTip="Begin Test">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="{StaticResource SquareDim}"/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+
+                        <Image Source="/Icons/Test.png" Margin="10"/>
+                        <Image Source="/Icons/Test_Selected.png" Margin="10" Visibility="{Binding ElementName=TestTaking_TgleBtn, Path=IsChecked, Converter={StaticResource BoolToVis}}"/>
+                        
+                        <TextBlock Text="Begin Test" Foreground="White" TextAlignment="Left" VerticalAlignment="Center" Width="120" Grid.Column="1" Visibility="{Binding ElementName=TestTaking_TgleBtn, Path=IsChecked, Converter={StaticResource InvserseBoolToVis}}"/>
+                        <TextBlock Text="Begin Test" Foreground="Black" TextAlignment="Left" VerticalAlignment="Center" Width="120" Grid.Column="1" Visibility="{Binding ElementName=TestTaking_TgleBtn, Path=IsChecked, Converter={StaticResource BoolToVis}}"/>
+                    </Grid>
+                    
                 </RadioButton>
+                
             </Grid>
         </Grid>
         

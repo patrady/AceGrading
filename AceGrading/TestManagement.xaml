@@ -36,8 +36,7 @@
                     <RowDefinition/>
                 </Grid.RowDefinitions>
                 <TextBlock Text="Tests" VerticalAlignment="Center"/>
-                <Button HorizontalAlignment="Right" Style="{DynamicResource BlueTextBtn}" Content="View Test" VerticalAlignment="Center" Click="ViewTest_Click"/>
-                <Ellipse Width="{DynamicResource LargeProfilePic}" Fill="{DynamicResource DarkSteelBlue}" Height="{DynamicResource LargeProfilePic}" Grid.Row="1" Grid.RowSpan="2"/>
+                <Ellipse Width="{DynamicResource LargeProfilePic}" Fill="{DynamicResource TestIconColor}" Height="{DynamicResource LargeProfilePic}" Grid.Row="1" Grid.RowSpan="2"/>
 
                 <TextBlock Text="{Binding SelectedTest.Initials}" Grid.Row="1" Grid.RowSpan="2" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="60" Foreground="White"/>
                 <StackPanel Grid.Row="3" Grid.RowSpan="2">
@@ -46,13 +45,14 @@
                     <TextBlock Text="{Binding SelectedTest.DateModified, StringFormat={}Modified: {0}}" HorizontalAlignment="Center"/>
                 </StackPanel>
 
-                <Grid Grid.Row="4" Margin="0,10,0,0">
+                <Grid Grid.Row="4" Margin="0,10,0,0" VerticalAlignment="Top">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="25"/>
                         <RowDefinition/>
-                        <RowDefinition Height="25"/>
+                        <RowDefinition/>
                     </Grid.RowDefinitions>
                     <TextBlock Text="Switch Test" VerticalAlignment="Center"/>
+                    <Button HorizontalAlignment="Right" Style="{DynamicResource BlueTextBtn}" Content="View Test" VerticalAlignment="Center" Click="ViewTest_Click"/>
                     <ListBox Name="testListbx" Grid.Row="1" Background="Transparent" BorderBrush="{x:Null}" 
                              ScrollViewer.VerticalScrollBarVisibility="Auto" HorizontalContentAlignment="Stretch" 
                              ItemsSource="{Binding Tests}" SelectedItem="{Binding SelectedTest}">                   
@@ -63,14 +63,14 @@
                                         <ColumnDefinition Width="40"/>
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
-                                    <Ellipse Height="{DynamicResource SmallProfilePic}" Width="{DynamicResource SmallProfilePic}" Fill="{DynamicResource DarkSteelBlue}"/>
+                                    <Ellipse Height="{DynamicResource SmallProfilePic}" Width="{DynamicResource SmallProfilePic}" Fill="{DynamicResource TestIconColor}"/>
                                     <TextBlock Text="{Binding Initials}" VerticalAlignment="Center" Foreground="White" HorizontalAlignment="Center"/>
                                     <TextBlock Text="{Binding TestName}" Grid.Column="1" Margin="10,0,50,0" TextWrapping="Wrap" Foreground="{DynamicResource DarkGray}" VerticalAlignment="Center" Width="160" />
                                 </Grid>
                             </DataTemplate>
                         </ListBox.ItemTemplate>
                     </ListBox>
-                    <Button Content="Create Test" Grid.Row="2" HorizontalAlignment="Right" Style="{DynamicResource BlueTextBtn}" Command="{Binding PreAddTest}" VerticalAlignment="Center" Click="ViewTest_Click"/>
+                    <Button Content="Create Test" Grid.Row="2" HorizontalAlignment="Center" Style="{DynamicResource BlueTextBtn}" Command="{Binding PreAddTest}" VerticalAlignment="Top" Margin="0,10,0,0" Click="ViewTest_Click"/>
                 </Grid>
             </Grid>
 
@@ -104,17 +104,17 @@
                         <RowDefinition Height="{DynamicResource LargeSquareDim}"/>
                         <RowDefinition Height="{DynamicResource LargeSquareDim}"/>
                         <RowDefinition Height="{DynamicResource LargeSquareDim}"/>
-                        <RowDefinition Height="{DynamicResource LargeSquareDim}"/>
+                        <RowDefinition Height="{DynamicResource ExtraLargeSquareDim}"/>
                         <RowDefinition Height="{DynamicResource SquareDim}"/>
-                        <RowDefinition/>
                         <RowDefinition/>
                     </Grid.RowDefinitions>
 
+                    <!--Test Name-->
                     <StackPanel Margin="2,2,0,0" VerticalAlignment="Center" Grid.Row="0">
                         <TextBlock Text="Name" VerticalAlignment="Center" Foreground="Black"/>
                         <DockPanel Grid.Row="1" Margin="0,5,0,0">
                             <Grid HorizontalAlignment="Left">
-                                <Ellipse Width="{DynamicResource SmallProfilePic}" Fill="{DynamicResource DarkSteelBlue}" Height="{DynamicResource SmallProfilePic}"/>
+                                <Ellipse Width="{DynamicResource SmallProfilePic}" Fill="{DynamicResource TestIconColor}" Height="{DynamicResource SmallProfilePic}"/>
                                 <TextBlock Text="{Binding Initials, FallbackValue='AA'}" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="White"/>
                             </Grid>
                             <StackPanel Margin="2,2,0,0" VerticalAlignment="Center">
@@ -124,6 +124,7 @@
                         </DockPanel>
                     </StackPanel>
 
+                    <!--Upload Document-->
                     <StackPanel Margin="2,2,0,0" VerticalAlignment="Center" Grid.Row="1">
                         <TextBlock Text="Document" VerticalAlignment="Center" Grid.Row="2" Foreground="Black"/>
                         <TextBox Margin="{DynamicResource SmallIndent}" Text="{Binding Upload_File_Name, Mode=TwoWay, FallbackValue='Upload File Path'}"/>
@@ -134,6 +135,7 @@
                         </DockPanel>
                     </StackPanel>
 
+                    <!--Test Points-->
                     <StackPanel Margin="2,2,0,0" VerticalAlignment="Center" Grid.Row="2">
                         <TextBlock Text="Total Points" VerticalAlignment="Center" Grid.Row="2" Foreground="Black"/>
                         <TextBox Margin="{DynamicResource SmallIndent}" Width="100" HorizontalAlignment="Left" Validation.ErrorTemplate="{StaticResource validationErrorTemplate}">
@@ -146,25 +148,32 @@
                             </TextBox.Text>
                         </TextBox>
                         <Rectangle Height="2" Margin="{DynamicResource SmallLineIndent}" Fill="{DynamicResource MediumGray}"/>
-                        <TextBlock Margin="{DynamicResource SmallIndent}" Visibility="{Binding Individual_Values, Converter={StaticResource BoolToVis}}" 
+                        <Grid>
+                            <TextBlock Margin="{DynamicResource SmallIndent}" Visibility="{Binding Individual_Values, Converter={StaticResource BoolToVis}}" 
                                HorizontalAlignment="Left" Text="{Binding PointsRemaining, StringFormat={}{0} Point(s) Remaining, UpdateSourceTrigger=PropertyChanged}"/>
+                            <TextBlock Margin="{DynamicResource SmallIndent}" Visibility="{Binding Individual_Values, Converter={StaticResource InvserseBoolToVis}}" 
+                               HorizontalAlignment="Left" Text="{Binding PointsPerQuestion, StringFormat={}{0} Points Per Question, UpdateSourceTrigger=PropertyChanged}"/>
+                        </Grid>
                     </StackPanel>
 
+                    <!--Individual Points-->
                     <StackPanel Margin="2,2,0,0" VerticalAlignment="Top" Grid.Row="3">
                         <TextBlock Text="Individual Points" VerticalAlignment="Center" Grid.Row="2" Foreground="Black"/>
-                        <DockPanel>
-                            <ToggleButton IsChecked="{Binding Individual_Values, Mode=TwoWay}" Style="{StaticResource YesNoToggleBtn}" Height="40" Width="40" HorizontalAlignment="Left"/>
-                            <Grid>
-                                <TextBlock Margin="6,2,0,0" VerticalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" Visibility="{Binding Individual_Values, FallbackValue=Hidden, Converter={StaticResource BoolToVis}}">
-                                       Point values will be modifiable.
-                                </TextBlock>
-                                <TextBlock Margin="6,2,0,0" VerticalAlignment="Center" TextWrapping="Wrap" Visibility="{Binding Individual_Values, Converter={StaticResource InvserseBoolToVis}}">
-                                       All point values will be worth the same and unmodifiable.
-                                </TextBlock>
-                            </Grid>
+                        <DockPanel Margin="{StaticResource SmallIndent}" HorizontalAlignment="Left">
+                            <RadioButton Content="Yes" Style="{DynamicResource OnSwitch}" Width="100" Height="30" IsChecked="{Binding Individual_Values, Mode=TwoWay}"/>
+                            <RadioButton Content="No" Style="{DynamicResource OffSwitch}" Width="100" Height="30" IsChecked="True"/>
                         </DockPanel>
+                        <Grid Margin="{StaticResource SmallIndent}">
+                            <TextBlock Margin="6,2,0,0" VerticalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" Visibility="{Binding Individual_Values, FallbackValue=Hidden, Converter={StaticResource BoolToVis}}">
+                                       Point values will be modifiable.
+                            </TextBlock>
+                            <TextBlock Margin="6,2,0,0" VerticalAlignment="Center" TextWrapping="Wrap" Visibility="{Binding Individual_Values, Converter={StaticResource InvserseBoolToVis}}">
+                                       All point values will be worth <LineBreak/> the same and unmodifiable.
+                            </TextBlock>
+                        </Grid>
                     </StackPanel>
 
+                    <!--Test Statistics-->
                     <StackPanel Margin="2,2,0,0" VerticalAlignment="Top" Grid.Row="5">
                         <TextBlock Text="Statistics" VerticalAlignment="Center" Grid.Row="2"/>
                         <TextBlock Text="No statistics available" VerticalAlignment="Center" Grid.Row="2" FontStyle="Italic" Margin="{StaticResource SmallIndent}" Visibility="{Binding Is_Graded, Converter={StaticResource InvserseBoolToVis}}"/>

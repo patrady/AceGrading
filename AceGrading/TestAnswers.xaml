@@ -47,7 +47,7 @@
                         </Grid.RowDefinitions>
                         <Grid Grid.Row="0">
                             <TextBlock Text="Sections" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="Black"/>
-                            <RepeatButton Content="+" Style="{StaticResource BlueTextRepeatBtn}" HorizontalAlignment="Right" Margin="0,0,0,2" Width="30" Height="30" FontSize="20" Delay="200" Interval="100"  Command="{Binding AddSection}"/>
+                            <RepeatButton Content="+" Style="{StaticResource BlueTextRepeatBtn}" ToolTip="Add Section" HorizontalAlignment="Right" Margin="0,0,0,2" Width="30" Height="30" FontSize="20" Delay="200" Interval="100"  Command="{Binding AddSection}"/>
                         </Grid>
                         <ListView x:Name="SectionsListbx" BorderBrush="{x:Null}" Grid.Row="1" Background="{x:Null}" ItemsSource="{Binding Sections}"
                                   SelectedItem="{Binding SelectedSection}"
@@ -123,6 +123,7 @@
             <ListView.Resources>
                 <DataTemplate DataType="{x:Type local:MultipleChoice}">
                     <DockPanel>
+                        <local:NewPlaceHolder/>
                         <Border x:Name="MultChoiceTemplate" VerticalAlignment="Center" CornerRadius="5" Background="{StaticResource OffWhite}" Margin="5" Width="380" MaxWidth="380">
                             <StackPanel>
                                 <!--Header-->
@@ -167,8 +168,7 @@
                                             <BeginStoryboard>
                                                 <Storyboard x:Name="ExpandMultChoice">
                                                     <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(FrameworkElement.MinHeight)" Storyboard.TargetName="AdvancedOptions_Grid">
-                                                        <EasingDoubleKeyFrame KeyTime="0:0:0" Value="0"/>
-                                                        <EasingDoubleKeyFrame KeyTime="0:0:0.4" Value="390"/>
+                                                        <EasingDoubleKeyFrame KeyTime="0:0:0.4" Value="250"/>
                                                     </DoubleAnimationUsingKeyFrames>
                                                 </Storyboard>
                                             </BeginStoryboard>
@@ -191,7 +191,9 @@
                                     </Grid.ColumnDefinitions>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="50"/>
+                                        <RowDefinition Height="100"/>
                                         <RowDefinition/>
+                                        <RowDefinition Height="40"/>
                                     </Grid.RowDefinitions>
 
                                     <TextBlock Text="Number of Options:" TextWrapping="Wrap" TextAlignment="Center" VerticalAlignment="Center" HorizontalAlignment="Center"/>
@@ -204,8 +206,11 @@
                                     </DockPanel>
 
                                     <!--Starting Options-->
-                                    <TextBlock Text="Strarting Options:" HorizontalAlignment="Center" VerticalAlignment="Top" Grid.Row="1"/>
-                                    <ListView Grid.Column="1" Grid.Row="1" ItemsSource="{Binding AnswersToPickFrom}" BorderBrush="{x:Null}" Background="{x:Null}" ScrollViewer.VerticalScrollBarVisibility="Hidden">
+                                    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Top" Grid.Row="1">
+                                        Starting <LineBreak/> Options:
+                                    </TextBlock>
+                                    <ListView Grid.Column="1" Grid.Row="1" ItemsSource="{Binding AnswersToPickFrom}" BorderBrush="{x:Null}"
+                                              Background="{x:Null}" ScrollViewer.VerticalScrollBarVisibility="Visible" VerticalAlignment="Top">
                                         <ListView.ItemsPanel>
                                             <ItemsPanelTemplate>
                                                 <WrapPanel Width="{Binding (FrameworkElement.ActualWidth), RelativeSource={RelativeSource AncestorType=ScrollContentPresenter}}"/>
@@ -217,6 +222,53 @@
                                             </DataTemplate>
                                         </ListView.ItemTemplate>
                                     </ListView>
+
+                                    <!--Copy Options from Another Question-->
+                                    <TextBlock Text="Presets:" TextWrapping="Wrap" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="2"/>
+                                    <DockPanel Grid.Column="1" Grid.Row="2" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                        <ComboBox SelectedItem="{Binding SelectedPreset, Mode=TwoWay}"
+                                              ItemsSource="{Binding RelativeSource={RelativeSource AncestorType=ListView}, Path=DataContext.LayoutPresets.MultChoicePresets}">
+                                            <ComboBox.Resources>
+                                                <DataTemplate DataType="{x:Type local:QuestionLayoutPreset_UI}">
+                                                    <ListView ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled" ItemsSource="{Binding Letters}" Background="{x:Null}" BorderBrush="{x:Null}">
+                                                        <ListView.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <Grid Margin="2" Background="Transparent">
+                                                                    <Ellipse Height="{StaticResource SmallProfilePic}" Width="{StaticResource SmallProfilePic}" Fill="SteelBlue"/>
+                                                                    <TextBlock Text="{Binding }" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                                </Grid>
+                                                            </DataTemplate>
+                                                        </ListView.ItemTemplate>
+                                                        <ListView.ItemsPanel>
+                                                            <ItemsPanelTemplate>
+                                                                <WrapPanel IsItemsHost="True"/>
+                                                            </ItemsPanelTemplate>
+                                                        </ListView.ItemsPanel>
+                                                    </ListView>
+                                                </DataTemplate>
+                                            </ComboBox.Resources>
+                                        </ComboBox>
+                                    </DockPanel>
+
+                                    <!--Allow Multiple Answers-->
+                                    <TextBlock TextWrapping="Wrap" VerticalAlignment="Top" TextAlignment="Center" Grid.Row="3" HorizontalAlignment="Center">Allow Multiple Answers:</TextBlock>
+                                    <DockPanel Grid.Column="1" Grid.Row="3" Margin="2" Height="30" HorizontalAlignment="Left">
+                                        <RadioButton Content="Yes" IsChecked="{Binding AllowMultipleAnswers, Mode=TwoWay}" Style="{StaticResource OnSwitch}" Width="100"/>
+                                        <RadioButton Content="No" IsChecked="{Binding AllowMultipleAnswers, Converter={StaticResource InverseBool}, Mode=TwoWay}" Style="{StaticResource OffSwitch}" Width="100"/>
+                                    </DockPanel>
+                                </Grid>
+
+                                <!--Section-->
+                                <Grid Margin="0,5,0,5" Visibility="{Binding RelativeSource={RelativeSource AncestorType=ListView}, Path=DataContext.HasSections, Mode=TwoWay, Converter={StaticResource BoolToVis}}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="120"/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Section:" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    <ComboBox Grid.Column="1" Height="25" Width="200" HorizontalAlignment="Left" VerticalAlignment="Center" 
+                                          SelectedItem="{Binding TestSection, Mode=TwoWay}" ItemsSource="{Binding RelativeSource={RelativeSource AncestorType=ListView}, Path=DataContext.Sections}"
+                                          DisplayMemberPath="Name">
+                                    </ComboBox>
                                 </Grid>
 
                                 <!--Point Value-->
@@ -244,38 +296,16 @@
                                     </DockPanel>
                                 </Grid>
 
-                                <!--Section-->
-                                <Grid Margin="0,5,0,5" Visibility="{Binding RelativeSource={RelativeSource AncestorType=ListView}, Path=DataContext.HasSections, Mode=TwoWay, Converter={StaticResource BoolToVis}}">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="120"/>
-                                        <ColumnDefinition/>
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock Text="Section:" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                                    <ComboBox Grid.Column="1" Height="25" Width="200" HorizontalAlignment="Left" VerticalAlignment="Center" 
-                                          SelectedItem="{Binding TestSection, Mode=TwoWay}" ItemsSource="{Binding RelativeSource={RelativeSource AncestorType=ListView}, Path=DataContext.Sections}"
-                                          DisplayMemberPath="Name">
-                                    </ComboBox>
-                                </Grid>
-
                                 <!--Delete-->
                                 <Button Content="Delete Question" Grid.Column="1" Margin="0,0,0,5" HorizontalAlignment="Center" Style="{StaticResource RedTextBtn}" Command="{Binding DeleteQuestion}"/>
                             </StackPanel>
                         </Border>
-                        <local:NewPlaceHolder/>
                     </DockPanel>
-                    <DataTemplate.Triggers>
-                        <EventTrigger RoutedEvent="Binding.TargetUpdated">
-                            <BeginStoryboard>
-                                <Storyboard>
-                                    <DoubleAnimation Duration="0:0:5" To="0.0" Storyboard.TargetProperty="Opacity" Storyboard.TargetName="PointValue_Grid"/>
-                                </Storyboard>
-                            </BeginStoryboard>
-                        </EventTrigger>
-                    </DataTemplate.Triggers>
                 </DataTemplate>
 
                 <DataTemplate DataType="{x:Type local:Matching}">
                     <DockPanel>
+                        <local:NewPlaceHolder/>
                         <Border CornerRadius="5"  Background="{StaticResource OffWhite}" Margin="5" Width="380" VerticalAlignment="Center">
                             <StackPanel>
                                 <!--Header-->
@@ -295,7 +325,7 @@
                                         <ColumnDefinition Width="120"/>
                                         <ColumnDefinition/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Text="Correct Answer(s):" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0,0,35"/>
+                                    <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0,0,35">Correct <LineBreak/> Answer(s):</TextBlock>
                                     <StackPanel Grid.Column="1">
 
                                         <ListView ItemsSource="{Binding OptionalAnswers}" Height="70" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Disabled" BorderBrush="{x:Null}" Background="{x:Null}">
@@ -321,7 +351,7 @@
                                             <BeginStoryboard>
                                                 <Storyboard x:Name="ExpandMultChoice">
                                                     <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(FrameworkElement.MinHeight)" Storyboard.TargetName="AdvancedOptions_Grid">
-                                                        <EasingDoubleKeyFrame KeyTime="0:0:0.4" Value="360"/>
+                                                        <EasingDoubleKeyFrame KeyTime="0:0:0.4" Value="410"/>
                                                     </DoubleAnimationUsingKeyFrames>
                                                 </Storyboard>
                                             </BeginStoryboard>
@@ -342,6 +372,10 @@
                                         <ColumnDefinition Width="120"/>
                                         <ColumnDefinition/>
                                     </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition/>
+                                        <RowDefinition Height="50"/>
+                                    </Grid.RowDefinitions>
                                     <TextBlock TextWrapping="Wrap" VerticalAlignment="Top" TextAlignment="Right" HorizontalAlignment="Center" Margin="0,5,0,15">Answers to <LineBreak/> Choose From:</TextBlock>
                                     <ListView Grid.Column="1" ItemsSource="{Binding AnswersToPickFrom}" BorderBrush="{x:Null}" Background="{x:Null}" ScrollViewer.VerticalScrollBarVisibility="Hidden">
                                         <ListView.ItemsPanel>
@@ -358,6 +392,24 @@
                                             </DataTemplate>
                                         </ListView.ItemTemplate>
                                     </ListView>
+                                    <TextBlock TextWrapping="Wrap" VerticalAlignment="Top" TextAlignment="Center" Grid.Row="1" HorizontalAlignment="Center">Allow Multiple Answers:</TextBlock>
+                                    <DockPanel Grid.Column="1" Grid.Row="1" Margin="2" Height="30" HorizontalAlignment="Center">
+                                        <RadioButton Content="Yes" IsChecked="{Binding AllowMultipleAnswers, Mode=TwoWay}" Style="{StaticResource OnSwitch}" Width="100"/>
+                                        <RadioButton Content="No" IsChecked="{Binding AllowMultipleAnswers, Converter={StaticResource InverseBool}, Mode=TwoWay}" Style="{StaticResource OffSwitch}" Width="100"/>
+                                    </DockPanel>
+                                </Grid>
+
+                                <!--Section-->
+                                <Grid Margin="0,5,0,5" Visibility="{Binding RelativeSource={RelativeSource AncestorType=ListView}, Path=DataContext.HasSections, Mode=TwoWay, Converter={StaticResource BoolToVis}}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="120"/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Section:" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    <ComboBox Grid.Column="1" Height="25" Width="200" HorizontalAlignment="Left" VerticalAlignment="Center" 
+                                          SelectedItem="{Binding TestSection, Mode=TwoWay}" ItemsSource="{Binding RelativeSource={RelativeSource AncestorType=ListView}, Path=DataContext.Sections}"
+                                          DisplayMemberPath="Name">
+                                    </ComboBox>
                                 </Grid>
 
                                 <!--Point Value-->
@@ -388,12 +440,12 @@
                                 <Button Content="Delete Question" Grid.Column="1" Margin="0,0,0,5" HorizontalAlignment="Center" Style="{StaticResource RedTextBtn}" Command="{Binding DeleteQuestion}"/>
                             </StackPanel>
                         </Border>
-                        <local:NewPlaceHolder/>
                     </DockPanel>
                 </DataTemplate>
 
                 <DataTemplate DataType="{x:Type local:TrueFalse}">
                     <DockPanel>
+                        <local:NewPlaceHolder/>
                         <Border CornerRadius="5" Background="{DynamicResource OffWhite}" Margin="5" Width="380" VerticalAlignment="Center">
                             <StackPanel>
                                 <!--Header-->
@@ -412,48 +464,63 @@
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="120"/>
                                         <ColumnDefinition/>
-                                        <ColumnDefinition/>
                                         <ColumnDefinition Width="12"/>
                                     </Grid.ColumnDefinitions>
                                     <TextBlock Text="Answer:" Grid.Row="1" Foreground="{DynamicResource FontColor}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                                    <RadioButton Content="True" IsChecked="{Binding Answer, Mode=TwoWay}" Style="{StaticResource RoundedAnswerToggleBtn}" Margin="2" Grid.Column="1" Height="30"/>
-
-                                    <RadioButton Content="False" IsChecked="{Binding Answer, Converter={StaticResource InvserseBoolToVis}, Mode=TwoWay}" Style="{StaticResource RoundedAnswerToggleBtn}" Grid.Column="2" Margin="2" Height="30">
-                                        <ToggleButton.Triggers>
-                                            <EventTrigger RoutedEvent="ToggleButton.Checked">
-                                                <BeginStoryboard>
-                                                    <Storyboard x:Name="ExpandAnwerIfFalse">
-                                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(FrameworkElement.MinHeight)" Storyboard.TargetName="AnswerIfFalse_Grid">
-                                                            <EasingDoubleKeyFrame KeyTime="0:0:0.4" Value="30"/>
-                                                        </DoubleAnimationUsingKeyFrames>
-                                                    </Storyboard>
-                                                </BeginStoryboard>
-                                            </EventTrigger>
-                                            <EventTrigger RoutedEvent="ToggleButton.Unchecked">
-                                                <BeginStoryboard>
-                                                    <Storyboard x:Name="CollapseAnswerIfFalse">
-                                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(FrameworkElement.MinHeight)" Storyboard.TargetName="AnswerIfFalse_Grid">
-                                                            <EasingDoubleKeyFrame KeyTime="0:0:0.4" Value="0"/>
-                                                        </DoubleAnimationUsingKeyFrames>
-                                                    </Storyboard>
-                                                </BeginStoryboard>
-                                            </EventTrigger>
-                                        </ToggleButton.Triggers>
-                                    </RadioButton>
+                                    <DockPanel Grid.Column="1" Margin="2" Height="30" HorizontalAlignment="Center">
+                                        <RadioButton Content="True" IsChecked="{Binding AnswerIsTrue, Mode=TwoWay}" Style="{StaticResource OnSwitch}" Width="100"/>
+                                        <RadioButton Content="False" IsChecked="{Binding AnswerIsFalse, Mode=TwoWay}" Style="{StaticResource OffSwitch}" Width="100">
+                                            <ToggleButton.Triggers>
+                                                <EventTrigger RoutedEvent="ToggleButton.Checked">
+                                                    <BeginStoryboard>
+                                                        <Storyboard x:Name="ExpandAnwerIfFalse">
+                                                            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(FrameworkElement.MinHeight)" Storyboard.TargetName="AnswerIfFalse_Grid">
+                                                                <EasingDoubleKeyFrame KeyTime="0:0:0.4" Value="30"/>
+                                                            </DoubleAnimationUsingKeyFrames>
+                                                        </Storyboard>
+                                                    </BeginStoryboard>
+                                                </EventTrigger>
+                                                <EventTrigger RoutedEvent="ToggleButton.Unchecked">
+                                                    <BeginStoryboard>
+                                                        <Storyboard x:Name="CollapseAnswerIfFalse">
+                                                            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(FrameworkElement.MinHeight)" Storyboard.TargetName="AnswerIfFalse_Grid">
+                                                                <EasingDoubleKeyFrame KeyTime="0:0:0.4" Value="0"/>
+                                                            </DoubleAnimationUsingKeyFrames>
+                                                        </Storyboard>
+                                                    </BeginStoryboard>
+                                                </EventTrigger>
+                                            </ToggleButton.Triggers>
+                                        </RadioButton>
+                                    </DockPanel>
                                 </Grid>
 
                                 <!--Answer if False Grid-->
-                                <Grid Name="AnswerIfFalse_Grid" Height="0">
+                                <StackPanel Name="AnswerIfFalse_Grid" Height="0">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="120"/>
+                                            <ColumnDefinition/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="Correct Answer:" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" TextWrapping="Wrap"/>
+
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBox  Text="{Binding Answer_If_False, FallbackValue='Optional', Mode=TwoWay}" Margin="2,5,5,5" SpellCheck.IsEnabled="True"/>
+                                            <Rectangle Height="2" Margin="2,0,0,0" Fill="{DynamicResource MediumGray}" Width="250" HorizontalAlignment="Left"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </StackPanel>
+
+                                <!--Section-->
+                                <Grid Margin="0,5,0,5" Visibility="{Binding RelativeSource={RelativeSource AncestorType=ListView}, Path=DataContext.HasSections, Mode=TwoWay, Converter={StaticResource BoolToVis}}">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="120"/>
                                         <ColumnDefinition/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Text="Correct Answer:" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" TextWrapping="Wrap"/>
-
-                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                        <TextBox  Text="{Binding Answer_If_False, FallbackValue='Optional', Mode=TwoWay}" Margin="2,5,5,5" SpellCheck.IsEnabled="True"/>
-                                        <Rectangle Height="2" Margin="2,0,0,0" Fill="{DynamicResource MediumGray}" Width="250" HorizontalAlignment="Left"/>
-                                    </StackPanel>
+                                    <TextBlock Text="Section:" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    <ComboBox Grid.Column="1" Height="25" Width="200" HorizontalAlignment="Left" VerticalAlignment="Center" 
+                                          SelectedItem="{Binding TestSection, Mode=TwoWay}" ItemsSource="{Binding RelativeSource={RelativeSource AncestorType=ListView}, Path=DataContext.Sections}"
+                                          DisplayMemberPath="Name">
+                                    </ComboBox>
                                 </Grid>
 
                                 <!--Point Value-->
@@ -484,12 +551,12 @@
                                 <Button Content="Delete Question" Grid.Column="1" Margin="0,5,0,5" HorizontalAlignment="Center" Style="{StaticResource RedTextBtn}" Command="{Binding DeleteQuestion}"/>
                             </StackPanel>
                         </Border>
-                        <local:NewPlaceHolder/>
                     </DockPanel>
                 </DataTemplate>
 
                 <DataTemplate DataType="{x:Type local:ShortAnswer}">
                     <DockPanel>
+                        <local:NewPlaceHolder/>
                         <Border CornerRadius="5" Background="{DynamicResource OffWhite}" Margin="5" Width="380" VerticalAlignment="Center">
                             <StackPanel>
                                 <!--Header-->
@@ -527,14 +594,29 @@
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="120"/>
                                         <ColumnDefinition/>
-                                        <ColumnDefinition/>
                                         <ColumnDefinition Width="12"/>
                                     </Grid.ColumnDefinitions>
                                     <TextBlock Text="Grading:" Grid.Row="4" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                                    <RadioButton Content="Strict" IsChecked="{Binding StrictInterpretation, Mode=TwoWay}" Style="{StaticResource RoundedAnswerToggleBtn}" Margin="2" Grid.Column="1" Height="30"
+                                    <DockPanel Grid.Column="1" Margin="2" Height="30" HorizontalAlignment="Left">
+                                        <RadioButton Content="Strict" IsChecked="{Binding StrictInterpretation, Mode=TwoWay}" Style="{StaticResource OnSwitch}" Width="100"
                                              ToolTip="Grade Word for Word"/>
-                                    <RadioButton Content="Intuitive" IsChecked="{Binding StrictInterpretation, Converter={StaticResource InvserseBoolToVis}, Mode=TwoWay}" Style="{StaticResource RoundedAnswerToggleBtn}" Grid.Column="2" Margin="2" Height="30"
-                                             ToolTip="Grade by Concept Understanding"/>
+                                        <RadioButton Content="Intuitive" IsChecked="{Binding StrictInterpretation, Converter={StaticResource InverseBool}, Mode=TwoWay}" Width="100"
+                                                     Style="{StaticResource OffSwitch}" ToolTip="Grade by Concept Understanding"/>
+                                    </DockPanel>
+                                    
+                                </Grid>
+
+                                <!--Section-->
+                                <Grid Margin="0,5,0,5" Visibility="{Binding RelativeSource={RelativeSource AncestorType=ListView}, Path=DataContext.HasSections, Mode=TwoWay, Converter={StaticResource BoolToVis}}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="120"/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Section:" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    <ComboBox Grid.Column="1" Height="25" Width="200" HorizontalAlignment="Left" VerticalAlignment="Center" 
+                                          SelectedItem="{Binding TestSection, Mode=TwoWay}" ItemsSource="{Binding RelativeSource={RelativeSource AncestorType=ListView}, Path=DataContext.Sections}"
+                                          DisplayMemberPath="Name">
+                                    </ComboBox>
                                 </Grid>
 
                                 <!--Point Value-->
@@ -565,12 +647,12 @@
                                 <Button Content="Delete Question" Grid.Column="1" Margin="0,5,0,5" HorizontalAlignment="Center" Style="{StaticResource RedTextBtn}" Command="{Binding DeleteQuestion}"/>
                             </StackPanel>
                         </Border>
-                        <local:NewPlaceHolder/>
                     </DockPanel>
                 </DataTemplate>
 
                 <DataTemplate DataType="{x:Type local:Essay}">
                     <DockPanel>
+                        <local:NewPlaceHolder/>
                         <Border CornerRadius="5"  Background="{DynamicResource OffWhite}" Margin="5" Width="380" VerticalAlignment="Center">
                             <StackPanel>
                                 <!--Header-->
@@ -596,6 +678,19 @@
                                     </TextBlock>
                                 </Grid>
 
+                                <!--Section-->
+                                <Grid Margin="0,5,0,5" Visibility="{Binding RelativeSource={RelativeSource AncestorType=ListView}, Path=DataContext.HasSections, Mode=TwoWay, Converter={StaticResource BoolToVis}}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="120"/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Section:" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    <ComboBox Grid.Column="1" Height="25" Width="200" HorizontalAlignment="Left" VerticalAlignment="Center" 
+                                          SelectedItem="{Binding TestSection, Mode=TwoWay}" ItemsSource="{Binding RelativeSource={RelativeSource AncestorType=ListView}, Path=DataContext.Sections}"
+                                          DisplayMemberPath="Name">
+                                    </ComboBox>
+                                </Grid>
+                                
                                 <!--Point Value-->
                                 <Grid Name="PointValue_Grid" Visibility="{Binding RelativeSource={RelativeSource AncestorType=ListView}, Path=DataContext.Individual_Values, Mode=TwoWay, Converter={StaticResource BoolToVis}}" Margin="0,5,0,5">
                                     <Grid.ColumnDefinitions>
@@ -620,24 +715,10 @@
                                     </DockPanel>
                                 </Grid>
 
-                                <!--Section-->
-                                <Grid Margin="0,5,0,5" Visibility="{Binding RelativeSource={RelativeSource AncestorType=ListView}, Path=DataContext.HasSections, Mode=TwoWay, Converter={StaticResource BoolToVis}}">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="120"/>
-                                        <ColumnDefinition/>
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock Text="Section:" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                                    <ComboBox Grid.Column="1" Height="25" Width="200" HorizontalAlignment="Left" VerticalAlignment="Center" 
-                                          SelectedItem="{Binding TestSection, Mode=TwoWay}" ItemsSource="{Binding RelativeSource={RelativeSource AncestorType=ListView}, Path=DataContext.Sections}"
-                                          DisplayMemberPath="Name">
-                                    </ComboBox>
-                                </Grid>
-
                                 <!--Delete-->
                                 <Button Content="Delete Question" Grid.Column="1" Margin="0,5,0,5" HorizontalAlignment="Center" Style="{StaticResource RedTextBtn}" Command="{Binding DeleteQuestion}"/>
                             </StackPanel>
                         </Border>
-                        <local:NewPlaceHolder/>
                     </DockPanel>
                 </DataTemplate>
             </ListView.Resources>

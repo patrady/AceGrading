@@ -25,6 +25,25 @@ namespace AceGrading
         }
     }
 
+    public class SelectedStudentNotNull_Command : ICommand
+    {
+        public Class thisClass { get; set; }
+        public event EventHandler CanExecuteChanged;
+
+        public SelectedStudentNotNull_Command(Class _Class)
+        {
+            this.thisClass = _Class;
+        }
+
+        public bool CanExecute(object parameter)
+        {
+            if (parameter != null)
+                return true;
+            return false;
+        }
+        public void Execute(object parameter) { }
+    }
+
     public class AddStudent_Command : ICommand
     {
         public Class thisClass;
@@ -45,7 +64,7 @@ namespace AceGrading
             }
 
             //Reset to normal
-            thisClass.NewStudent.StudentName = "";
+            thisClass.NewStudent.StudentName = thisClass.NewStudent.DefaultName;
         }
     }
 

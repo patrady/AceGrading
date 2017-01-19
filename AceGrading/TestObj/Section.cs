@@ -19,7 +19,6 @@ namespace AceGrading
             IncrementRequired = new IncrementSectionRequiredQuestions_Command(this);
             DecrementRequired = new DecrementSectionRequiredQuestions_Command(this);
         }
-
         public Section()
         {
             ParentTest = ParentTest;
@@ -84,21 +83,32 @@ namespace AceGrading
         {
             this.Questions.Add(question);
             if (this.IsRequiredSection)
-                this.Required_Questions++;
+                this.IncrementRequiredQuestions();
         }
         public void RemoveQuestion(Question question)
         {
             this.Questions.Remove(question);
             if (this.IsRequiredSection)
-                this.Required_Questions--;
+                this.DecrementRequiredQuestions();
         }
         public void IncrementRequiredQuestions()
         {
-            this.Required_Questions++;
+            if (this.Required_Questions < Total_Questions || this.IsRequiredSection)
+            {
+                this.Required_Questions++;
+                if (ParentTest.Individual_Values)
+                    this.ParentTest.UpdatePointsRemaining();
+                else
+                    this.ParentTest.UpdatePointsPerQuestion();
+            }
         }
         public void DecrementRequiredQuestions()
         {
             this.Required_Questions--;
+            if (ParentTest.Individual_Values)
+                this.ParentTest.UpdatePointsRemaining();
+            else
+                this.ParentTest.UpdatePointsPerQuestion();
         }
 
         //Private variables

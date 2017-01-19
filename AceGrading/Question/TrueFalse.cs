@@ -4,13 +4,24 @@ using System.ComponentModel;
 
 namespace AceGrading
 {
-    public class TrueFalse : Question, QuestionInterface , INotifyPropertyChanged
+    public class TrueFalse : Question, INotifyPropertyChanged
     {
         public TrueFalse(Test _ParentTest)
         {
             this.ParentTest = _ParentTest;
             this.TestSection = this.ParentTest.RequiredSection;
-            Answer = false;
+            this.SetAnswer(false);
+            this.AnswerIsFalse = false;
+            this.AnswerIsTrue = false;
+            Answer_If_False = null;
+        }
+
+        public TrueFalse()
+        {
+            this.TestSection = this.ParentTest.RequiredSection;
+            this.SetAnswer(false);
+            this.AnswerIsFalse = false;
+            this.AnswerIsTrue = false;
             Answer_If_False = null;
         }
 
@@ -18,14 +29,6 @@ namespace AceGrading
         public bool Answer
         {
             get { return _Answer; }
-            set
-            {
-                if (value != _Answer)
-                {
-                    _Answer = value;
-                    OnPropertyChanged("Answer");
-                }
-            }
         }
         public string Answer_If_False
         {
@@ -39,29 +42,58 @@ namespace AceGrading
                 }
             }
         }
-
-        //Private Methods
-        string QuestionInterface.Question_Type()
+        public bool AnswerIsTrue
         {
-            return "True / False";
+            get { return _AnswerIsTrue; }
+            set
+            {
+                if (value != _AnswerIsTrue)
+                {
+                    _AnswerIsTrue = value;
+                    if (_AnswerIsTrue)
+                    {
+                        SetAnswer(true);
+                        this.AnswerIsFalse = false;
+                    }
+                    OnPropertyChanged("AnswerIsTrue");
+                }
+            }
+        }
+        public bool AnswerIsFalse
+        {
+            get { return _AnswerIsFalse; }
+            set
+            {
+                if (value != _AnswerIsFalse)
+                {
+                    _AnswerIsFalse = value;
+                    if (_AnswerIsFalse)
+                    {
+                        SetAnswer(false);
+                        this.AnswerIsTrue = false;
+                    }
+                    OnPropertyChanged("AnswerIsFalse");
+                }
+            }
+
+        }
+
+        //Public Methods
+        /// <summary>
+        /// Set the answer of the True/False Question.
+        /// </summary>
+        /// <param name="Value">The value of the answer.</param>
+        public void SetAnswer(bool Value)
+        {
+            _Answer = Value;
+            if (_Answer)
+                AnswerIsTrue = true;
+            else AnswerIsFalse = true;
+
         }
 
         //Private Variables
-        private bool _Answer;
+        private bool _Answer, _AnswerIsTrue, _AnswerIsFalse;
         private string _Answer_If_False;
-
-        //INotifyPropertyChanged
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected virtual void OnPropertyChanged(string propertyName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-        protected bool SetField<T>(ref T field, T value, string propertyName)
-        {
-            if (EqualityComparer<T>.Default.Equals(field, value)) return false;
-            field = value;
-            OnPropertyChanged(propertyName);
-            return true;
-        }
     }
 }

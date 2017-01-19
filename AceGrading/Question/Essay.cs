@@ -3,7 +3,7 @@ using System.Windows.Documents;
 
 namespace AceGrading
 {
-    public class Essay : Question, QuestionInterface
+    public class Essay : Question
     {
         public Essay(Test _ParentTest)
         {
@@ -16,12 +16,6 @@ namespace AceGrading
         public string Answer
         {
             get; set;
-        }
-
-        //Private Methods
-        string QuestionInterface.Question_Type()
-        {
-            return "Essay";
         }
     }
 }

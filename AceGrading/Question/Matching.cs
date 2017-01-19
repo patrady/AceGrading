@@ -6,7 +6,7 @@ using System.Windows.Input;
 
 namespace AceGrading
 {
-    public class Matching : Question , QuestionInterface
+    public class Matching : Question
     {
         public Matching() { }
         public Matching(Test _ParentTest)
@@ -23,11 +23,18 @@ namespace AceGrading
         public List<string> Answer;
         public ObservableCollection<MatchingAnswer_UI> OptionalAnswers { get; set; }
         public ObservableCollection<MatchingAnswer_UI> AnswersToPickFrom { get; set; }
-        string QuestionInterface.Question_Type()
+        public bool AllowMultipleAnswers
         {
-            return "Matching";
+            get { return _AllowMultipleAnswers; }
+            set
+            {
+                if (value != _AllowMultipleAnswers)
+                {
+                    _AllowMultipleAnswers = value;
+                    OnPropertyChanged("AllowMultipleAnswers");
+                }
+            }
         }
-
 
         //Public Methods
         public void Save_Matching(int index, string answer)
@@ -77,6 +84,8 @@ namespace AceGrading
             AnswersToPickFrom.Add(new MatchingAnswer_UI(this) { Letter = 'Z', isOptionalAnswer = false, isAnswer = false });
         }
 
+        //Private Variables
+        private bool _AllowMultipleAnswers;
     }
 
     public class MatchingAnswer_UI : INotifyPropertyChanged

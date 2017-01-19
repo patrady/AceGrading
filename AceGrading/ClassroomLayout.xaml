@@ -7,8 +7,6 @@
              mc:Ignorable="d" 
              d:DesignHeight="900" d:DesignWidth="1500">
     <UserControl.Resources>
-        <local:BooleanToCollapseConverter x:Key="BoolToCollapse"/>
-        <local:InverseBooleanToCollapseConverter x:Key="InverseBoolToCollapse"/>
         <Style x:Key="GrayedOutPlaceholder" TargetType="Border">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding DataContext.SelectedClass.ClassLayout.HasDisjointStudents, 
@@ -34,25 +32,10 @@
         
     </UserControl.Resources>
     <Grid>
-        <Grid Name="ClassroomGrid">
+        <Grid Name="ClassroomGrid" d:IsHidden="True">
             <TextBlock Text="Front" HorizontalAlignment="Center" VerticalAlignment="Top"/>
             <ScrollViewer Margin="0,15,0,0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
-                <ItemsControl  ItemsSource="{Binding SelectedClass.ClassLayout.Desks}">
-                    <!--<ItemsControl.Items>
-                        <local:Student StudentName="Mary Margaret Herring" RowIndex="0" ColumnIndex="0" Status="Finished"/>
-                        <local:Student StudentName="Student #2" RowIndex="0" ColumnIndex="1" Status="Offline"/>
-                        <local:Student StudentName="Student #3" RowIndex="0" ColumnIndex="2" Status="Online"/>
-                        <local:Student StudentName="Student #4" RowIndex="1" ColumnIndex="0" WifiUsage="AbstainingWifi"/>
-                        <local:Student StudentName="Student #5" RowIndex="1" ColumnIndex="1"  WifiUsage="UsingWifi"/>
-                        <local:Student StudentName="Student #6" RowIndex="1" ColumnIndex="2" WifiUsage="UsingWifi"/>
-                        <local:Student StudentName="Student #7" RowIndex="2" ColumnIndex="0" WifiUsage="AbstainingWifi"/>
-                        <local:Student StudentName="Student #8" RowIndex="2" ColumnIndex="1" WifiUsage="UsingWifi"/>
-                        <local:Student StudentName="Student #9" RowIndex="2" ColumnIndex="2" WifiUsage="AbstainingWifi"/>
-                        <local:Student StudentName="Student #10" RowIndex="3" ColumnIndex="0" WifiUsage="UsingWifi"/>
-                        <local:Student StudentName="Student #11" RowIndex="3" ColumnIndex="1" WifiUsage="UsingWifi"/>
-                        <local:StudentPlaceholder RowIndex="4" ColumnIndex="1"/>
-                        <local:StudentPlaceholder RowIndex="4" ColumnIndex="0"/>
-                    </ItemsControl.Items>-->
+                <ItemsControl ItemsSource="{Binding SelectedClass.ClassLayout.Desks}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <Grid local:GridHelpers.ColumnCount="{Binding SelectedClass.ClassLayout.NumColumns, FallbackValue=11}"
@@ -90,7 +73,7 @@
                                                 <BeginStoryboard>
                                                     <Storyboard x:Name="CollapseDetails">
                                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(FrameworkElement.MaxHeight)" Storyboard.TargetName="NormalView_DockPnl">
-                                                            <EasingDoubleKeyFrame KeyTime="0:0:0.4" Value="40"/>
+                                                            <EasingDoubleKeyFrame KeyTime="0:0:0.4" Value="45"/>
                                                         </DoubleAnimationUsingKeyFrames>
                                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(FrameworkElement.MinHeight)" Storyboard.TargetName="DetailsGrid">
                                                             <EasingDoubleKeyFrame KeyTime="0:0:0.4" Value="0"/>
@@ -101,7 +84,7 @@
                                         </ToggleButton.Triggers>
                                     </ToggleButton>
 
-                                    <StackPanel Name="NormalView_DockPnl" MaxHeight="40">
+                                    <StackPanel Name="NormalView_DockPnl" MaxHeight="45" Margin="0,7,0,0">
                                         <DockPanel HorizontalAlignment="Center" Height="40" VerticalAlignment="Bottom" Grid.Row="1">
                                             <!--Test Progress - Circle Progress Bar-->
                                             <Viewbox Margin="5,0">
@@ -270,12 +253,79 @@
             </ScrollViewer>
         </Grid>
 
-        
-        <Grid Name="PausedGrid" Background="{DynamicResource RoyalSeaBlue}" Opacity=".9"
-              Visibility="{Binding SelectedClass.SelectedTest.IsPaused, Converter={StaticResource BoolToVis}}" d:IsHidden="True">
+        <!--Grid that shows the different stages of the test status-->
+        <Grid Opacity=".9" Visibility="Visible">
+            <Grid.Style>
+                <Style TargetType="{x:Type Grid}">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding SelectedClass.SelectedTest.TestStatus}" Value="{x:Static local:Test_Status.NotStarted}">
+                            <Setter Property="Visibility" Value="Hidden"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding SelectedClass.SelectedTest.TestStatus}"  Value="{x:Static local:Test_Status.Started}">
+                            <Setter Property="Visibility" Value="Hidden"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding SelectedClass.SelectedTest.TestStatus}"  Value="{x:Static local:Test_Status.Paused}">
+                            <Setter Property="Background" Value="{DynamicResource RoyalSeaBlue}"/>
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding SelectedClass.SelectedTest.TestStatus}"  Value="{x:Static local:Test_Status.CollectingData}">
+                            <Setter Property="Background" Value="{DynamicResource Yellow}"/>
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding SelectedClass.SelectedTest.TestStatus}"  Value="{x:Static local:Test_Status.Ended}">
+                            <Setter Property="Background" Value="{DynamicResource Red}"/>
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Grid.Style>
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                <TextBlock Text="The test has been paused." FontStyle="Italic" Foreground="White" FontSize="40"/>
-                <TextBlock Text="Resume the test at your earliest convenience." FontStyle="Italic" Foreground="White" FontSize="20" TextAlignment="Center"/>
+                <TextBlock FontStyle="Italic" Foreground="White" FontSize="40">
+                    <TextBlock.Style>
+                        <Style TargetType="{x:Type TextBlock}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SelectedClass.SelectedTest.TestStatus}" Value="{x:Static local:Test_Status.NotStarted}">
+                                    <Setter Property="Text" Value="{x:Null}"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding SelectedClass.SelectedTest.TestStatus}"  Value="{x:Static local:Test_Status.Started}">
+                                    <Setter Property="Text" Value="{x:Null}"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding SelectedClass.SelectedTest.TestStatus}"  Value="{x:Static local:Test_Status.Paused}">
+                                    <Setter Property="Text" Value="The test has been paused."/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding SelectedClass.SelectedTest.TestStatus}"  Value="{x:Static local:Test_Status.CollectingData}">
+                                    <Setter Property="Text" Value="Almost done!"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding SelectedClass.SelectedTest.TestStatus}"  Value="{x:Static local:Test_Status.Ended}">
+                                    <Setter Property="Text" Value="The test has ended."/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+                <TextBlock FontStyle="Italic" Foreground="White" FontSize="20" TextAlignment="Center">
+                    <TextBlock.Style>
+                        <Style TargetType="{x:Type TextBlock}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SelectedClass.SelectedTest.TestStatus}" Value="{x:Static local:Test_Status.NotStarted}">
+                                    <Setter Property="Text" Value="{x:Null}"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding SelectedClass.SelectedTest.TestStatus}"  Value="{x:Static local:Test_Status.Started}">
+                                    <Setter Property="Text" Value="{x:Null}"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding SelectedClass.SelectedTest.TestStatus}"  Value="{x:Static local:Test_Status.Paused}">
+                                    <Setter Property="Text" Value="Please resume the test at your earliest convenience."/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding SelectedClass.SelectedTest.TestStatus}"  Value="{x:Static local:Test_Status.CollectingData}">
+                                    <Setter Property="Text" Value="Please wait a few moments while all answers are collected..."/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding SelectedClass.SelectedTest.TestStatus}"  Value="{x:Static local:Test_Status.Ended}">
+                                    <Setter Property="Text" Value="All answers have been successfully saved."/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
             </StackPanel>
         </Grid>
     </Grid>

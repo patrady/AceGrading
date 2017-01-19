@@ -6,10 +6,10 @@
              xmlns:local="clr-namespace:AceGrading"
              mc:Ignorable="d">
     <UserControl.Triggers>
-        <EventTrigger RoutedEvent="Control.MouseLeave">
+        <EventTrigger RoutedEvent="Control.LostFocus">
             <BeginStoryboard>
                 <Storyboard >
-                    <DoubleAnimation Duration="0:0:0.3" To="0.1" Storyboard.TargetProperty="Opacity" Storyboard.TargetName="mainBorder"/>
+                    <DoubleAnimation Duration="0:0:0.3" To="0" Storyboard.TargetProperty="Opacity" Storyboard.TargetName="mainBorder"/>
                     <DoubleAnimation Duration="0:0:0.3" To="20" Storyboard.TargetProperty="Width" Storyboard.TargetName="mainGrid"/>
                     <DoubleAnimation Duration="0:0:0.3" To="1" Storyboard.TargetProperty="Opacity" Storyboard.TargetName="plusBtnGrid"/>
                     <DoubleAnimation Duration="0:0:0.3" To="0" Storyboard.TargetProperty="Opacity" Storyboard.TargetName="questionsStkPnl"/>
@@ -19,10 +19,17 @@
                 </Storyboard>
             </BeginStoryboard>
         </EventTrigger>
+        <EventTrigger RoutedEvent="Control.MouseLeave">
+            <BeginStoryboard>
+                <Storyboard>
+                    <DoubleAnimation Duration="0:0:0.3" To="0" Storyboard.TargetProperty="Opacity" Storyboard.TargetName="mainBorder"/>
+                </Storyboard>
+            </BeginStoryboard>
+        </EventTrigger>
     </UserControl.Triggers>
 
     <Grid Name="mainGrid" Width="20">
-        <Border Name="mainBorder" Opacity="0.1" Background="{StaticResource OffWhite}" CornerRadius="5"/>
+        <Border Name="mainBorder" Opacity="0" Background="{StaticResource OffWhite}" CornerRadius="5"/>
 
         <StackPanel Name="questionsStkPnl" Opacity="0" HorizontalAlignment="Center" VerticalAlignment="Center">
             <TextBlock Text="Add Question:" HorizontalAlignment="Center"/>
@@ -34,7 +41,7 @@
             <Button Content="Short Answer" Style="{StaticResource RectangleButton}" Margin="2" Command="{Binding RelativeSource={RelativeSource AncestorType=ListView}, Path=DataContext.AddShortAnswer}"/>
             <Button Content="Essay" Style="{StaticResource RectangleButton}"  Margin="2" Command="{Binding RelativeSource={RelativeSource AncestorType=ListView}, Path=DataContext.AddEssay}"/>
         </StackPanel>
-
+        
         <Grid Visibility="Visible" Name="plusBtnGrid">
             <Button Style="{StaticResource BlueTextBtn}" ToolTip="Add Question" Content="+" FontSize="30">
                 <Button.Triggers>
@@ -42,13 +49,13 @@
                         <BeginStoryboard>
                             <Storyboard>
                                 <DoubleAnimation Duration="0:0:0.3" To="1" Storyboard.TargetProperty="Opacity" Storyboard.TargetName="mainBorder"/>
-                                <DoubleAnimation Duration="0:0:0.3" To="120" Storyboard.TargetProperty="Width" Storyboard.TargetName="mainGrid"/>
                             </Storyboard>
                         </BeginStoryboard>
                     </EventTrigger>
                     <EventTrigger RoutedEvent="Button.Click">
                         <BeginStoryboard>
                             <Storyboard>
+                                <DoubleAnimation Duration="0:0:0.3" To="120" Storyboard.TargetProperty="Width" Storyboard.TargetName="mainGrid"/>
                                 <ObjectAnimationUsingKeyFrames BeginTime="00:00:00" Storyboard.TargetName="questionsStkPnl" Storyboard.TargetProperty="(UIElement.Visibility)">
                                     <DiscreteObjectKeyFrame KeyTime="00:00:00" Value="{x:Static Visibility.Visible}"/>
                                 </ObjectAnimationUsingKeyFrames>
